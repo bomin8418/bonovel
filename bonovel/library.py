@@ -152,6 +152,34 @@ class Library:
             self.books.values(), key=lambda b: b.opened, reverse=True
         )
 
+    def scan_data_dir(self) -> int:
+        """扫描数据目录顶层的 .txt/.TXT 文件并把书库中未收录的自动入库。
+
+        用于支持“把小说放进数据目录、重启即现于书架”。已入库文件会跳过，
+        避免每次启动重复重写。文件无法解析时跳过并保留日志。返回新入库数。
+        """
+        import logging
+
+        logger = logging.getLogger("bonovel")
+        added = 0
+        try:
+            for p in sorted(self.directory.glob("*.txt")):
+                if not p.is_file():
+                    continue
+                bid = _book_id([str(p)])
+                if bid in self.books:
+                    continue
+                try:
+                    self.import_files([p])
+                    added += 1
+                except Exception as exc:  # noqa: BLE001 - 单文件失败不影响其余
+                    logger.warning("自动入库失败 %s：%s", p, exc)
+        except OSError as exc:  # pragma: no cover - 目录读取异常
+            logger.warning("扫描数据目录失败：%s", exc)
+        if added:
+            self.save()
+        return added
+
     def import_files(self, files: List["str | Path"]) -> Book:
         """解析并入库一个或多个文件，返回 Book 条目。"""
         novel = parse_files([str(f) for f in files])

@@ -94,6 +94,25 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(len(rb.bookmarks), 1)
         self.assertEqual(rb.bookmarks[0].page, 4)
 
+    def test_scan_data_dir_auto_imports(self):
+        # 把 txt 直接放进数据目录
+        p = self._write("放入的.txt", "扫描小说\n第一章\n正文内容\n")
+        added = self.lib.scan_data_dir()
+        self.assertEqual(added, 1)
+        self.assertEqual(len(self.lib.books), 1)
+        book = next(iter(self.lib.books.values()))
+        self.assertEqual(book.title, "扫描小说")
+
+    def test_scan_data_dir_is_idempotent(self):
+        self._write("a.txt", "甲书\n第一章\n内容\n")
+        self._write("b.txt", "乙书\n第一章\n内容\n")
+        added1 = self.lib.scan_data_dir()
+        self.assertEqual(added1, 2)
+        # 已入库后重复扫描不再新增
+        added2 = self.lib.scan_data_dir()
+        self.assertEqual(added2, 0)
+        self.assertEqual(len(self.lib.books), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

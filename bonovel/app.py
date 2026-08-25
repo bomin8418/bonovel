@@ -26,6 +26,7 @@ class App:
         cfg = config.load_config(self.data_dir)
         self.cfg = cfg
         self.library = Library(self.data_dir)
+        self.library.scan_data_dir()  # 自动入库数据目录内的 .txt
         self.theme: Theme = get_theme(cfg["theme"])
         self.columns = r.terminal_size().columns
         self.rows = r.terminal_size().rows
