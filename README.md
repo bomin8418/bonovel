@@ -42,6 +42,20 @@ python -m bonovel a.txt b.txt
 python -m bonovel -d /path/to/data
 ```
 
+**免安装、全局以命令运行**（推荐给不想 `pip install` 的人）：
+
+```bash
+# Windows：在项目根目录
+bonovel.bat                       # 打开书架
+bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
+
+# macOS / Linux：脚本在 bin/ 下，可放入 PATH
+./bin/bonovel --version
+```
+
+两个启动脚本都会临时把项目目录加入 `PYTHONPATH` 并调用 `python -m bonovel`，
+因此**无需 pip 安装**即可在任意目录以 `bonovel` 命令使用（直接调用脚本路径）。
+
 > 也可以设置环境变量 `BONOVEL_DATA_DIR` 指定数据目录（优先于系统默认）。
 
 ---
@@ -72,7 +86,7 @@ python -m bonovel -d /path/to/data
 
 - **字号**：`小 / 标准 / 大`（影响页面密度而非变宽字体）。
 - **行距**：`紧凑 / 标准 / 宽松`。
-- **主题**：`sepia`(暖黄护眼) / `classic`(白底黑字) / `dark`(夜间) / `paper`(纸张) / `terminal`(终端绿)。
+- **主题**：`sepia`(暖黄护眼) / `classic`(白底黑字) / `dark`(夜间) / `paper`(纸张) / `terminal`(终端绿) / `plain`(命令行·单色，白底无彩色块，最贴合纯命令行观感)。
 - **阅读模式**：`page`（整屏分页）与 `scroll`（逐行滚动），按 `p` 即时切换。
 - **滚动步进**：滚动模式下每次按键滚动的行数（1~20）。
 - **自动保存进度**：退出或换书时自动保存阅读位置（默认开）。

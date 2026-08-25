@@ -24,14 +24,14 @@
 | 书库 | `library.json` 持久化、导入/删除/最近阅读 | 8a1394a |
 | **数据目录自动扫描** | 启动时自动扫描数据目录顶层 `*.txt` 并入库，幂等；新增 `Library.scan_data_dir()`，`App.__init__` 调用 | ed77e0b |
 
-## 3. 当前任务（已批准计划，尚未完成）
+## 3. 当前任务（已批准计划）
 
 计划：「让 bo-novel 更像普通命令行工具（外观/文案伪装 + 全局可运行）」
 
-- [ ] 子步1：`themes.py` 新增「终端命令风」主题 `plain`（白底、无彩色块、dim 强调），加入 `_THEMES`/`_ORDER` 与 `config` 合法主题集合 —— **尚未开始**
-- [ ] 子步2：书架首页标题/提示文案改为命令行风格（"bonovel + type a command (...)"），交互按键不变
-- [ ] 子步3：`bonovel.bat`（Windows）与 `bin/bonovel`（POSIX）全局启动脚本（免 pip install），README 补充运行方式
-- [ ] 子步4：主题/配置测试、全量测试、`--version` 冒烟、`git diff` 检查
+- [x] 子步1：`themes.py` 新增「终端命令风」主题 `plain`（白底、无彩色块、dim 强调），加入 `_THEMES`/`_ORDER` 与 `config` 合法主题集合 —— **✅ 已提交 diff 暂存**
+- [x] 子步2：书架首页标题/提示文案改为命令行风格（"bonovel + usage: ..."），交互按键不变 —— **✅ 已提交暂存**
+- [x] 子步3：`bonovel.bat`（Windows）与 `bin/bonovel`（POSIX）全局启动脚本（免 pip install），README 补充运行方式 —— **✅ 已提交暂存（bin/bonovel 已设可执行位并实测可运行）**
+- [ ] 子步4：主题/配置测试、全量测试、`--version` 冒烟、`git diff` 检查 —— **⏳ 进行中（已加 test_plain_theme_available，待全量测试与提交）**
 
 状态标记：⏳ 进行中 / ✅ 已完成 / ⬜ 未开始
 

@@ -45,6 +45,28 @@ class ThemeNamesTestCase(unittest.TestCase):
             self.assertTrue(is_valid(n))
         self.assertFalse(is_valid("nope"))
 
+    def test_plain_theme_available_and_config_accepts(self):
+        from bonovel.themes import get_theme
+
+        # plain 主题必须已登记且字段完整
+        self.assertIn("plain", theme_names())
+        t = get_theme("plain")
+        self.assertTrue(t.background and t.foreground and t.header_fg)
+
+        # config 校验应接受 plain（写临时 config.json 再 load）
+        import json
+
+        tmp = tempfile.mkdtemp()
+        try:
+            p = Path(tmp) / "config.json"
+            p.write_text(json.dumps({"theme": "plain"}), encoding="utf-8")
+            from bonovel import config as cfg_mod
+
+            loaded = cfg_mod.load_config(tmp)
+            self.assertEqual(loaded["theme"], "plain")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
 
 class LibraryTestCase(unittest.TestCase):
     def setUp(self):

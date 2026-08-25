@@ -67,9 +67,17 @@ _THEMES: Dict[str, Theme] = {
         dim_fg=(70, 120, 80), accent_fg=(180, 240, 190),
         status_fg=(120, 210, 130), status_bg=(22, 34, 26),
     ),
+    "plain": Theme(
+        name="plain", title="命令行 · 单色",
+        background=(255, 255, 255), foreground=(30, 30, 30),
+        header_fg=(255, 255, 255), header_bg=(70, 70, 70),
+        selection_fg=(255, 255, 255), selection_bg=(90, 90, 90),
+        dim_fg=(140, 140, 140), accent_fg=(60, 60, 60),
+        status_fg=(30, 30, 30), status_bg=(232, 232, 232),
+    ),
 }
 
-_ORDER = ["sepia", "classic", "dark", "paper", "terminal"]
+_ORDER = ["sepia", "classic", "dark", "paper", "terminal", "plain"]
 
 
 def theme_names() -> list:

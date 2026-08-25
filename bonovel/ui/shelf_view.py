@@ -28,7 +28,10 @@ class ShelfView(View):
 
     def render(self, screen: r.Screen) -> None:
         draw_header(
-            screen, "bo-novel 书架", self.theme, hint="I 导入   Enter 阅读   D 删除   ? 帮助"
+            screen,
+            "bonovel",
+            self.theme,
+            hint="usage: i=import  enter=open  d=delete  ?=help  q=quit",
         )
         style = r.Style(fg=self.theme.foreground, bg=self.theme.background)
         sel_style = r.Style(fg=self.theme.selection_fg, bg=self.theme.selection_bg)
@@ -42,7 +45,10 @@ class ShelfView(View):
         row = 1
         if not self.books:
             screen.set(
-                r.apply_style("  书库为空。按 I 导入一本 .txt 小说。", style), row=1
+                r.apply_style(
+                    "  no books imported — run: python -m bonovel <file.txt>", style
+                ),
+                row=1,
             )
         else:
             for i in range(self.offset, min(self.offset + avail, len(self.books))):
@@ -50,7 +56,7 @@ class ShelfView(View):
                 percent = int(b.progress.percent()) if b.progress else 0
                 label = f"  {b.title}"
                 label = r.utils.pad_to(label, min(40, self.columns - 20))
-                label += f"  {percent}%"
+                label += f"  [{percent}%]"
                 if i == self.cursor:
                     screen.set(r.apply_style(label, sel_style), row=row)
                 else:
@@ -64,7 +70,7 @@ class ShelfView(View):
             draw_footer(
                 screen,
                 self.theme,
-                f"{len(self.books)} 本 · {self.import_path or '按 I 导入文本'}",
+                f"{len(self.books)} book(s) · BONOVEL_DATA_DIR={self.app.data_dir}",
             )
         self.message = ""
 

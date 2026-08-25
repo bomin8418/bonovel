@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+# bonovel — POSIX (macOS/Linux) 免 pip 安装全局启动脚本。
+# 用法：bonovel [小说.txt] [-d 目录]
+# 把项目目录加入 PYTHONPATH 后调用 python3 -m bonovel。
+
+# 项目根：脚本通常放在 <项目根>/bin/ 下
+SELF="$0"
+while [ -L "$SELF" ]; do
+  TARGET="$(readlink "$SELF")"
+  case "$TARGET" in
+    /*) SELF="$TARGET" ;;
+    *) SELF="$(dirname "$SELF")/$TARGET" ;;
+  esac
+done
+PROJECT_DIR="$(CDPATH= cd -- "$(dirname -- "$SELF")/.." && pwd)"
+
+case ":$PYTHONPATH:" in
+  *":$PROJECT_DIR:"*) ;;
+  *) PYTHONPATH="$PROJECT_DIR${PYTHONPATH:+:$PYTHONPATH}" ;;
+esac
+export PYTHONPATH
+
+# 选择可用的 Python 解释器：探测真实可运行者（避免 Windows 的 python3 占位别名）。
+for PY in python3 python; do
+  if command -v "$PY" >/dev/null 2>&1 && "$PY" -c "import sys" >/dev/null 2>&1; then
+    exec "$PY" -m bonovel "$@"
+  fi
+done
+echo "bonovel: 未找到可运行的 python3/python，请先安装 Python 3.9+" >&2
+exit 1

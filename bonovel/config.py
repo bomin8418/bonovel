@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from bonovel.errors import ConfigError
+from bonovel import themes
 
 CONFIG_FILENAME = "config.json"
 LIBRARY_FILENAME = "library.json"
@@ -92,7 +93,7 @@ def _merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _validate(cfg: Dict[str, Any]) -> None:
-    if cfg["theme"] not in ("classic", "sepia", "dark", "paper", "terminal"):
+    if cfg["theme"] not in themes.theme_names():
         raise ConfigError(f"无效主题：{cfg['theme']!r}")
     if cfg["font_size"] not in _FONT_SIZES:
         raise ConfigError(f"无效字号：{cfg['font_size']!r}")
