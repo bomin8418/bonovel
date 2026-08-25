@@ -22,4 +22,5 @@ classifiers = [
 bonovel = "bonovel.cli:main"
 
 [tool.setuptools]
+package-dir = { "" = "src" }
 packages = ["bonovel", "bonovel.ui"]

@@ -8,10 +8,12 @@ REM       脚本所在目录须是项目根（含 bonovel 包）。
 
 setlocal
 set "PROJECT_DIR=%~dp0"
+set "SRC_DIR=%PROJECT_DIR%src"
+
 if not defined PYTHONPATH (
-    set "PYTHONPATH=%PROJECT_DIR%"
+    set "PYTHONPATH=%SRC_DIR%"
 ) else (
-    set "PYTHONPATH=%PROJECT_DIR%;%PYTHONPATH%"
+    set "PYTHONPATH=%SRC_DIR%;%PYTHONPATH%"
 )
 
 REM 确定 Python 解释器：优先调用用户 PATH 中的 python

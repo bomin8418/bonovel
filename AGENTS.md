@@ -1,78 +1,77 @@
-# AGENTS.md — 项目约定（供 AI 协作者 / 开发者）
+# AGENTS.md — 代理操作手册
 
-本文件描述 bo-novel 的工程约定、命令、架构与变更规范。接手本项目或继续开发时请先读此文件。
+> 这是代理（Codex / Claude Code / 其他 agent）每次会话开始时的第一个读入文件。
+> 它定义：开始写代码前要做什么、如何工作、如何收尾。
 
 ## 项目是什么
 
-bo-novel 是一个**终端小说阅读器**，使用 **Python 纯标准库**（零第三方运行依赖）编写。
-面向 Windows / macOS / Linux 跨平台。核心能力：.txt 导入与自动编码识别、分页/滚动阅读、
-章节目录、书签、进度记忆、自定义主题、阅读速度统计。
+bo-novel 是一个**终端小说阅读器**（TUI），Python 3.11 纯标准库、零第三方依赖，跨 Windows/macOS/Linux。
+核心能力：.txt 导入与自动编码识别、分页/滚动阅读、章节目录、书签、进度记忆、主题、阅读速度统计。
 
-## 常用命令（都在项目根目录执行）
+## 启动流程（Startup Workflow）
 
-```bash
-# 运行（任意目录需先保证可导入；见下方“运行与安装”）
-python -m bonovel --version                 # 版本
-python -m bonovel --help                    # 参数说明
-python -m bonovel 你的小说.txt               # 启动并导入
+每次会话开始，**先读、再写**，顺序如下：
 
-# 测试
-python -m unittest discover -s tests -v     # 全量单元测试（当前 55 项）
-python -m unittest tests.test_stats -v      # 单模块测试
+1. 读 `progress.md` ——了解「当前已验证状态」与上个会话的「Next best action」。
+2. 读 `feature_list.json` ——了解每个功能的状态与验证方式。
+3. 读本文件剩余部分（工作规则、definition of done）。
+4. 用 `standard verification path` 跑一次基线验证，确认绿色后再动手。
 
-# 语法检查
-python -m py_compile bonovel/*.py bonovel/ui/*.py
+**标准路径**（见 progress.md）：
 
-# 暂存/查看改动
-git add -A && git status --short
-git diff --cached --stat
-```
-
-## 运行与安装
-
-- **项目目录直跑**：`cd` 进根目录后 `python -m bonovel` 可用。
-- **任意目录运行**：需要把项目加入 `PYTHONPATH`（`set PYTHONPATH=%CD%` / `export PYTHONPATH="$PWD"`），
-  或 `python -m pip install -e .`（注：本会话中 `pip install` 在沙箱内被权限层拦截，需用户手动执行）。
-- `pyproject.toml` 已声明 console script `bonovel = bonovel.cli:main`（全局安装后可用）。
-- **数据目录**：书库/配置/日志存放处。默认 `~/.bonovel`；可用 `-d DIR` 或环境变量 `BONOVEL_DATA_DIR` 覆盖。
-  放在数据目录 **顶层** 的 `.txt` 会在启动时被 `Library.scan_data_dir()` 自动扫描入库。
+- 启动：`PYTHONPATH=src python -m bonovel`（或 `./init.sh`）
+- 验证：`python -m unittest discover -s tests -t .`
 
 ## 目录结构
 
 ```
-bonovel/                # 主包
-  __init__.py __main__.py cli.py app.py     # 入口与主循环
-  config.py errors.py utils.py              # 配置、异常、通用工具（编码检测/显示宽度）
-  parser.py layout.py renderer.py themes.py keys.py stats.py library.py
-  ui/                                      # 界面视图子包
-    base.py shelf_view.py reader.py settings_view.py
-    chapters_view.py bookmarks_view.py
-tests/                  # unittest 测试（config/parser/renderer/stats）
-pyproject.toml README.md AGENTS.md PROGRESS.md
+bo-novel/
+├── AGENTS.md              # 本手册
+├── init.sh                # 安装 + 验证 + 启动
+├── feature_list.json      # 功能清单（状态 + 验证 + 证据）
+├── progress.md            # 每次会话的进度记录
+├── src/                   # 生产代码 src/bonovel/
+├── tests/                 # unittest 测试（留在根目录）
+├── README.md / pyproject.toml / bonovel.bat / bin/bonovel   # 文档与入口脚本
+└── .gitignore
 ```
 
 ## 架构要点
 
-- **主循环** `app.py` → `App`：持有 `cfg`(配置) / `library`(书库) / `theme` / 视图栈，
-  用 `keys.KeyParser` 读键并分发到当前 View 的 `on_key()`。退出恢复终端。
-- **View 基类** `ui/base.py`：`render(screen)` 把内容写入 `renderer.Screen` 缓冲；`on_key()` 返回/跳转。
-- **渲染** `renderer.py`：手写 ANSI（SGR 24bit 色、光标、整屏 `Screen` 无闪烁刷新）；`ensure_vt_enabled()` Windows 开启 VT。
-- **主题** `themes.py`：`Theme` 数据类 + 内置集合；新增主题需同步更新 `config._validate` 的合法集合。
-- **解析** `parser.py`：行偏移索引 + 按需 `line_text()`，支持超大文件；章节正则见 `_CHAPTER_RE`。
-- **编码** `utils.py`：BOM → UTF-8 严格校验 → gbk/gb18030/big5 回退 → 乱码比例判定。
-- **书库** `library.py`：`Library` 持久化 `library.json`；`scan_data_dir()` 自动入库数据目录顶层 .txt。
-- **速度/进度** `stats.py`：`ReadingStats`(WPM) / `ProgressMemory`(进度百分比、序列化)。
+- 主循环 `src/bonovel/app.py` → `App`：持有 cfg/library/theme/视图栈，用 `keys.KeyParser` 读键分发到 View.on_key()。
+- View 基类 `src/bonovel/ui/base.py`：render(screen) 写 `renderer.Screen` 缓冲；on_key() 返回/跳转。
+- 渲染 `renderer.py`：手写 ANSI；`ensure_vt_enabled()` 开 Windows VT。
+- 主题 `themes.py`：`Theme` + 内置集合；新增主题需同步 `config._validate`（已改为从 theme_names() 派生）。
+- 解析 `parser.py`：行偏移索引 + 按需 line_text()；编码 `utils.py`（BOM→UTF-8→gbk→gb18030→big5）。
+- 书库 `library.py`：library.json 持久化 + `scan_data_dir()` 启动自动入库数据目录顶层 .txt。
+- 速度/进度 `stats.py`：ReadingStats(WPM) / ProgressMemory。
+
+## 工作规则（Working Rules）
+
+1. **一次只做一个功能**：`feature_list.json` 中同时只能有一个 `in_progress`，做完并验证、写 evidence 后才算通过。
+2. **改动前跑基线**：标准验证命令要绿，否则先修 baseline 再做别的。
+3. **凡声称完成必须有证据**：做了验证却无命令/输出记录，不算 done。
+4. **提交前验证**：改完跑 `python -m unittest discover -s tests -t .` 全绿；`git status` 确认改动范围干净。
+5. **跨平台**：msvcrt/termios/ctypes 在平台分支内延迟 import，不在顶层 import；路径用 pathlib.Path。
+6. **改动收尾更新文档**：更新 progress.md 的 Session Record、feature_list.json 的 status/evidence。
+
+## Definition of Done（最重要）
+
+一个功能/改动「完成」必须同时满足：
+
+1. 标准启动路径能跑（`./init.sh` 或等价命令）。
+2. 标准验证路径全绿（`python -m unittest discover -s tests -t .`）。
+3. `feature_list.json` 里该项 status 更新为 `passing` 且 evidence 有实跑命令/输出。
+4. `progress.md` 更新了 Current Verified State 与 Session Record。
+5. 无半成品：`git status` 干净（或改动已提交），下一会话无需手工修补即可继续。
+6. 提交信息写清「做了什么 + 验证了什么」。
 
 ## 键位约定（阅读界面）
 
-`↓/→/Space/PgDn` 下一、`↑/←/PgUp` 上一、`Home/End` 首末、`p` 切换分页/滚动、
-`g` 章节目录、`@` 加书签、`b` 书签列表、`c` 设置、`?` 帮助、`q/Esc` 返回、`Ctrl-C` 退出。
+`↓/→/Space/PgDn` 下一、`↑/←/PgUp` 上一、`Home/End` 首末、`p` 分页/滚动、`g` 章节目录、`@` 加书签、`b` 书签列表、`c` 设置、`?` 帮助、`q/Esc` 返回、`Ctrl-C` 退出。
 
-## 变更规范
+## 已知环境限制
 
-- **提交前**：跑 `python -m unittest discover -s tests` 全绿；`git diff --cached --stat` 确认改动范围干净。
-- **新增配置项**：改 `config.py` 的 `DEFAULTS` 且同步 `_validate`；必要时更新 `config_path/load/save` 测试。
-- **新增主题**：`themes.py` 加 `Theme` 并加入 `_ORDER`；`config._validate` 的主题集合必须同步。
-- **改动后验证**：全量测试 + 针对改动的单元测试 + 端到端冒烟（数据目录放 .txt → 启动自动入库）。
-- 跨平台注意：`msvcrt`(Win) / `termios`(Unix) / `ctypes`(Win VT) 都在平台分支内**延迟 import**，
-  不要在模块顶层直接 import 平台专属库；路径一律用 `pathlib.Path`。
+- `pip install -e .` 在本会话沙箱被权限拦截；用 `./init.sh` 或 `PYTHONPATH=src` 回退。
+- `python3` 在 Windows 是占位别名；脚本探测真实可用解释器。
+- 终端交互无法自动化验证，用「构造 App + 直接调用视图」的冒烟脚本替代。

@@ -13,10 +13,11 @@ while [ -L "$SELF" ]; do
   esac
 done
 PROJECT_DIR="$(CDPATH= cd -- "$(dirname -- "$SELF")/.." && pwd)"
+SRC_DIR="$PROJECT_DIR/src"
 
 case ":$PYTHONPATH:" in
-  *":$PROJECT_DIR:"*) ;;
-  *) PYTHONPATH="$PROJECT_DIR${PYTHONPATH:+:$PYTHONPATH}" ;;
+  *":$SRC_DIR:"*) ;;
+  *) PYTHONPATH="$SRC_DIR${PYTHONPATH:+:$PYTHONPATH}" ;;
 esac
 export PYTHONPATH
 

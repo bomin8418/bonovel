@@ -24,22 +24,29 @@
 
 不需要安装任何第三方依赖，只要你的机器有 **Python 3.9 及以上**即可。
 
+**推荐：一键 `./init.sh`（安装 + 验证 + 打印启动命令）**：
+
 ```bash
-# 直接以模块方式运行
-python -m bonovel
+./init.sh                       # 安装（跳过）+ 验证 + 打印启动命令
+RUN_START_COMMAND=1 ./init.sh  # 验证后直接启动
+```
+
+```bash
+# 直接以模块方式运行（src 布局，需 PYTHONPATH=src）
+PYTHONPATH=src python -m bonovel
 
 # 查看版本 / 帮助
-python -m bonovel --version
-python -m bonovel --help
+PYTHONPATH=src python -m bonovel --version
+PYTHONPATH=src python -m bonovel --help
 
 # 启动时直接导入一本小说
-python -m bonovel /path/to/novel.txt
+PYTHONPATH=src python -m bonovel /path/to/novel.txt
 
 # 一次导入多本（拼接为一部）
-python -m bonovel a.txt b.txt
+PYTHONPATH=src python -m bonovel a.txt b.txt
 
 # 自定义数据目录（书库/配置/日志存放处）
-python -m bonovel -d /path/to/data
+PYTHONPATH=src python -m bonovel -d /path/to/data
 ```
 
 **免安装、全局以命令运行**（推荐给不想 `pip install` 的人）：
@@ -53,7 +60,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 ./bin/bonovel --version
 ```
 
-两个启动脚本都会临时把项目目录加入 `PYTHONPATH` 并调用 `python -m bonovel`，
+启动脚本会临时把 `src/` 加入 `PYTHONPATH` 再调用 `python -m bonovel`，
 因此**无需 pip 安装**即可在任意目录以 `bonovel` 命令使用（直接调用脚本路径）。
 
 > 也可以设置环境变量 `BONOVEL_DATA_DIR` 指定数据目录（优先于系统默认）。
@@ -62,7 +69,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 
 ## 快速开始
 
-1. 运行 `python -m bonovel` 进入书架界面。
+1. 运行 `./init.sh`（或 `PYTHONPATH=src python -m bonovel`）进入书架界面。
 2. 按 `I`（或命令行为文件）导入一本 `.txt` 小说。应用会自动识别编码并解析章节。
 3. 用 `↑`/`↓` 选中书名，按 `Enter` 开始阅读。
 4. 阅读状态自动记忆，下次打开自动回到上次位置。
@@ -150,7 +157,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 
 ```bash
 # 运行全部单元测试（依赖较少，无网络）
-python -m unittest discover -s tests -v
+python -m unittest discover -s tests -t . -v
 ```
 
 测试覆盖：编码检测（UTF-8/GBK/GB18030/Big5、BOM、乱码判定）、章节解析、大文件行索引、分页/滚动排版边界、键序列解析、主题字段、书库持久化、进度/书签序列化、配置读写。

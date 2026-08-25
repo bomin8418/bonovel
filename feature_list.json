@@ -1,0 +1,136 @@
+{
+  "features": [
+    {
+      "id": "import-txt",
+      "priority": 1,
+      "area": "import",
+      "title": ".txt 小说导入",
+      "user_visible_behavior": "通过命令行传入一个或多个 .txt 文件后，应用导入并进入阅读。",
+      "status": "passing",
+      "verification": "PYTHONPATH=src python -m bonovel <file.txt> 能启动并显示该小说的书架条目。",
+      "evidence": "端到端冒烟通过：导入后进入 ReaderView，书名正确显示。",
+      "notes": "多文件视为同一部小说的连续章节。"
+    },
+    {
+      "id": "encoding-detect",
+      "priority": 1,
+      "area": "import",
+      "title": "编码自动检测",
+      "user_visible_behavior": "UTF-8/GBK/GB18030/Big5/带 BOM 的 UTF-16/32 文件都能正确显示中文，不出现乱码。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 EncodingDetectionTestCase 全过。",
+      "evidence": "test_parser.py 覆盖 UTF-8/GBK/GB18030/UTF-16LE BOM 等，全绿。",
+      "notes": "检测顺序：BOM → UTF-8 严格校验 → gbk → gb18030 → big5。"
+    },
+    {
+      "id": "chapter-parse",
+      "priority": 1,
+      "area": "parse",
+      "title": "章节目录解析",
+      "user_visible_behavior": "自动识别 第X章/回/节/卷、序章、Chapter N 等章节标题，可在章节目录中跳转。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 ParserTestCase 全过。",
+      "evidence": "test_parser.py 覆盖章节检测变体已通过。",
+      "notes": "超大文本采用抽样扫描，避免拖慢。"
+    },
+    {
+      "id": "page-scroll",
+      "priority": 2,
+      "area": "render",
+      "title": "分页与滚动阅读",
+      "user_visible_behavior": "分页模式整屏翻页；滚动模式逐行滚；按 p 一键切换。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 LayoutPageTestCase/ScrollWindowTestCase 全过。",
+      "evidence": "test_renderer.py 排版与滚动测试全绿。",
+      "notes": "支持字号/行距档位、中文首行缩进、页码进度。"
+    },
+    {
+      "id": "themes",
+      "priority": 3,
+      "area": "settings",
+      "title": "主题切换",
+      "user_visible_behavior": "6 套主题（sepia/classic/dark/paper/terminal/plain）可即时切换并持久化。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 ThemeNamesTestCase/test_plain_theme_available 全过。",
+      "evidence": "设置界面切换主题后 config.json 落盘正确。",
+      "notes": "plain 为新增的「命令行·单色」主题。"
+    },
+    {
+      "id": "keyboard",
+      "priority": 2,
+      "area": "input",
+      "title": "跨平台键盘输入",
+      "user_visible_behavior": "Windows/macOS/Linux 下方向键、翻页键、Ctrl 组合、resize 均正确响应。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 KeyParserTestCase 全过。",
+      "evidence": "test_renderer.py 键序列解析测试全绿。",
+      "notes": "msvcrt(Win)/termios(Unix) 平台分支内延迟 import。"
+    },
+    {
+      "id": "bookmarks",
+      "priority": 3,
+      "area": "reading",
+      "title": "书签管理",
+      "user_visible_behavior": "按 @ 加书签、b 打开列表、Enter 跳转、d 删除，重启用后仍在。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 LibraryTestCase.test_bookmarks_persist 全过。",
+      "evidence": "书签序列化与持久化测试通过。",
+      "notes": ""
+    },
+    {
+      "id": "progress-memory",
+      "priority": 1,
+      "area": "reading",
+      "title": "阅读进度记忆",
+      "user_visible_behavior": "退出/换书自动保存当前位置，重启后回到上次位置。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 LibraryTestCase.test_progress_save_reload 全过。",
+      "evidence": "进度 ProgressMemory 序列化往返测试通过。",
+      "notes": "受 config auto_save 控制。"
+    },
+    {
+      "id": "wpm-stats",
+      "priority": 4,
+      "area": "reading",
+      "title": "阅读速度统计",
+      "user_visible_behavior": "阅读时实时显示当前 WPM 与累计平均速度。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 ReadingStatsTestCase 全过。",
+      "evidence": "WPM 计算与零时长安全测试通过。",
+      "notes": ""
+    },
+    {
+      "id": "library-autoscan",
+      "priority": 2,
+      "area": "library",
+      "title": "书库持久化与数据目录自动扫描",
+      "user_visible_behavior": "书库存 library.json；数据目录顶层 .txt 启动时自动入库。",
+      "status": "passing",
+      "verification": "python -m unittest discover -s tests -t . 中 LibraryTestCase.test_scan_data_dir_* 全过。",
+      "evidence": "自动扫描与幂等性测试通过。",
+      "notes": "只扫数据目录顶层，不递归。"
+    },
+    {
+      "id": "cli",
+      "priority": 4,
+      "area": "cli",
+      "title": "CLI 入口",
+      "user_visible_behavior": "--version/--help/-d 数据目录/FILE 参数均可用。",
+      "status": "passing",
+      "verification": "PYTHONPATH=src python -m bonovel --version 输出 bo-novel 0.1.0。",
+      "evidence": "--version 与 --help 冒烟通过。",
+      "notes": ""
+    },
+    {
+      "id": "launcher",
+      "priority": 4,
+      "area": "cli",
+      "title": "免 pip 全局启动脚本",
+      "user_visible_behavior": "init.sh（POSIX）与 bonovel.bat（Windows）可免 pip 全局运行。",
+      "status": "passing",
+      "verification": "./bin/bonovel --version 输出 bo-novel 0.1.0；./init.sh 跑完验证并打印启动命令。",
+      "evidence": "POSIX 脚本实测 exit 0；init.sh 可执行且语法通过。",
+      "notes": "解释器探测绕开 Windows python3 占位别名。"
+    }
+  ]
+}
