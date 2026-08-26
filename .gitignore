@@ -6,6 +6,9 @@ build/
 dist/
 .eggs/
 
+# PyInstaller
+*.spec
+
 # 虚拟环境
 .venv/
 venv/
@@ -21,3 +24,7 @@ env/
 Thumbs.db
 .idea/
 .vscode/
+
+# VSCode 插件
+extensions/vscode-bonovel/node_modules/
+*.vsix

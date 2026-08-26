@@ -1,0 +1,59 @@
+{
+  "name": "vscode-bonovel",
+  "displayName": "bo-novel",
+  "description": "在 VSCode 集成终端中用 bo-novel 打开当前 .txt 小说",
+  "version": "0.1.0",
+  "publisher": "bo-novel",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onCommand:bonovel.open"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "bonovel.open",
+        "title": "bo-novel: 在终端打开当前小说",
+        "category": "bo-novel"
+      }
+    ],
+    "configuration": {
+      "title": "bo-novel",
+      "properties": {
+        "bonovel.command": {
+          "type": "string",
+          "default": "bonovel",
+          "markdownDescription": "全局 `bonovel` 命令名或可执行文件完整路径（例如 `bonovel`、`C:\\Python311\\Scripts\\bonovel.exe`）。"
+        },
+        "bonovel.dataDir": {
+          "type": "string",
+          "default": "",
+          "description": "可选：传给 -d 的用户数据目录（书库/配置所在处），留空则不传。"
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "bonovel.open",
+          "when": "resourceExtname == .txt",
+          "group": "bo-novel@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "bonovel.open",
+          "when": "resourceExtname == .txt",
+          "group": "bo-novel@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bonovel.open"
+        }
+      ]
+    }
+  }
+}

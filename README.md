@@ -61,6 +61,37 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 
 > 也可以设置环境变量 `BONOVEL_DATA_DIR` 指定数据目录（优先于系统默认）。
 
+**全局安装（推荐）**——让 `bonovel` 成为系统命令，任意目录可用：
+
+```bash
+# Windows：构建产物见下一节，然后一键安装
+install_global.bat             # wheel 安装，自动加入用户 PATH
+install_global.bat exe         # 复制独立 bonovel.exe 并加入 PATH
+
+# macOS / Linux
+./install_global.sh            # pip install --user
+```
+
+安装后重开终端，即可全局使用：`bonovel` / `bonovel 小说.txt`。
+
+---
+
+## 构建全局安装包与 VSCode 插件
+
+构建产物统一输出到 `dist/`：
+
+| 产物 | 命令 | 说明 |
+| ---- | ---- | ---- |
+| `bo_novel-0.1.0-py3-none-any.whl` | `python -m pip wheel . -w dist --no-deps` | pip 安装包 |
+| `bonovel.exe` | `python -m PyInstaller --onefile --console --name bonovel --paths src --collect-submodules bonovel packaging/pyinstaller_entry.py` | Windows 独立单文件 |
+| `bonovel-0.1.0.vsix` | `npx --yes @vscode/vsce package`（在 `extensions/vscode-bonovel/` 下） | VSCode 插件 |
+
+> 构建使用系统 Python（如 Windows 的 `C:\Python311\python.exe`），本项目自身零第三方运行依赖；PyInstaller / vsce 为打包期工具。
+
+**VSCode 插件（终端启动器）**：源码在 `extensions/vscode-bonovel/`。在 VSCode 扩展面板「从 VSIX 安装」选择
+`dist/bonovel-0.1.0.vsix` 后，对 `.txt` 文件右键或命令面板执行 **bo-novel: 在终端打开当前小说**，
+即在集成终端运行 `bonovel "<文件>"`。可配置 `bonovel.command` / `bonovel.dataDir`。
+
 ---
 
 ## 快速开始

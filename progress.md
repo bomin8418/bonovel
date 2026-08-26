@@ -12,6 +12,20 @@
 
 ## Session Record
 
+### 会话：打包全局安装包（wheel + exe）+ VSCode 终端启动器插件 — 已完成
+
+- **Goal**：产出可全局安装的安装包与 VSCode 插件
+- **Completed**：
+  - pip wheel：`C:\Python311\python.exe -m pip wheel . -w dist --no-deps` → `dist/bo_novel-0.1.0-py3-none-any.whl`；全局安装到 `C:\Python311\Scripts\bonovel.exe`
+  - PyInstaller exe：`pyinstaller --onefile --console --name bonovel --paths src --collect-submodules bonovel packaging/pyinstaller_entry.py` → `dist/bonovel.exe`（warn 文件无缺失 bonovel.ui.* 模块）
+  - `install_global.bat`（wheel/exe 双模式，PowerShell 改用户级 PATH，纯 ASCII 防编码问题）与 `install_global.sh`（POSIX pip --user）
+  - VSCode 插件 `extensions/vscode-bonovel/`（命令 bonovel.open、右键菜单仅 .txt、配置 command/dataDir）；vsce 打包 → `dist/bonovel-0.1.0.vsix`
+- **Verification run**：`bonovel --version`（wheel 与 exe 两路径）→ bo-novel 0.1.0；install_global.bat 两模式实跑并把命令目录加入用户 PATH；.vsix 打包成功（3.54KB）；`python run.py --test` 全绿
+- **Evidence recorded**：见 dist/ 产物、install_global.bat/.sh、extensions/vscode-bonovel/
+- **Commits**：待提交
+- **Known risks**：exe 仅本平台可构建；.bat 必须保持 ASCII（cmd 用 ANSI 码页读 .bat）
+- **Next best action**：无
+
 ### 会话：分页缩进改为「段首缩进 · 续行顶格」— 已完成
 
 - **Goal**：修复正文"第一行顶格、之后全部缩进"的不一致观感
