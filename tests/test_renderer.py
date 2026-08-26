@@ -216,6 +216,22 @@ class KeyParserTestCase(unittest.TestCase):
         self.assertIsNone(p.push(0x1B))
         self.assertEqual(p.resolve(), (keys.ESC, None))
 
+    def test_wide_char_windows_byte(self):
+        # Windows msvcrt 直接返回码点 >0xFF：中=0x4E2D
+        p = keys.KeyParser()
+        self.assertEqual(p.push(0x4E2D), ("中", "中"))
+
+    def test_utf8_multibyte_input(self):
+        # Unix 原始模式：中 = 0xE4 0xB8 0xAD 逐字节累积
+        p = keys.KeyParser()
+        res = keys.reads_keys(p, [0xE4, 0xB8, 0xAD])
+        self.assertEqual(res, [("中", "中")])
+
+    def test_utf8_ascii_mix(self):
+        p = keys.KeyParser()
+        res = keys.reads_keys(p, [ord("a"), 0xE4, 0xB8, 0xAD, ord("b")])
+        self.assertEqual([k for k, _ in res], ["a", "中", "b"])
+
 
 class WinExtKeyTestCase(unittest.TestCase):
     """Windows msvcrt 扩展键（\xe0/\x00 前缀 + 扫描码）→ 逻辑键翻译。"""

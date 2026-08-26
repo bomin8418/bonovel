@@ -96,6 +96,7 @@ class KeyParser:
     def __init__(self):
         self._escape_buf: Optional[str] = None
         self._escape_mode = False  # 当前字节是否处于逃逸序列中
+        self._utf8_buf: Optional[bytes] = None  # Unix 下宽字符 UTF-8 累积
 
     def _start_esc(self):
         self._escape_buf = ""
@@ -113,7 +114,24 @@ class KeyParser:
             return _ESCAPE_SEQUENCES[buf]
         return UNKNOWN
 
+    def _push_utf8(self, byte: int) -> "Optional[Tuple[str, Optional[str]]]":
+        """累积 UTF-8 多字节字符（Unix 原始模式下中文等宽字符输入）。"""
+        buf = (self._utf8_buf or b"") + bytes([byte & 0xFF])
+        try:
+            s = buf.decode("utf-8")
+            self._utf8_buf = None
+            return (s, s)
+        except UnicodeDecodeError:
+            if len(buf) >= 4:
+                self._utf8_buf = None
+                return (UNKNOWN, None)
+            self._utf8_buf = buf
+            return None  # 还需更多字节
+
     def push(self, byte: int) -> Optional[Tuple[str, Optional[str]]]:
+        # Windows 宽字符：msvcrt.getwch 直接返回码点（>0xFF），勿掩码截断
+        if byte > 0xFF:
+            return (chr(byte), chr(byte))
         ch = chr(byte & 0xFF)
 
         # ---- 处于逃逸序列中 ----
@@ -164,7 +182,7 @@ class KeyParser:
         if 0x20 <= byte <= 0x7E:
             return (chr(byte), chr(byte))  # 可打印 ASCII
         if byte >= 0x80:
-            return (ch, ch)  # 宽字符（中文文本）
+            return self._push_utf8(byte)  # 宽字符（中文等，UTF-8 累积）
         return (UNKNOWN, None)
 
     def resolve(self) -> Optional[Tuple[str, Optional[str]]]:

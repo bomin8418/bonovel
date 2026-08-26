@@ -76,9 +76,11 @@ class ShelfView(View):
 
     def on_key(self, key: str, text: Optional[str]) -> Optional[str]:
         if key == "i":
-            self.app.enter_import()
-            self.refresh()
-            # 导入后进入阅读（若成功）
+            from bonovel.ui.import_view import ImportView
+
+            self.app.push_stack(
+                ImportView(self.app, self.theme, self.columns, self.rows)
+            )
             return None
         if key in ("q", "ctrl-c"):
             self.app.quit()

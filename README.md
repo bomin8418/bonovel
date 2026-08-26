@@ -1,3 +1,5 @@
+.
+
 # bo-novel
 
 一款功能完善、用户友好的**终端小说阅读器**，使用 **Python 标准库**编写、零第三方依赖。
@@ -29,7 +31,7 @@
 ```bash
 python run.py                       # 打开书架
 python run.py --version             # 查看版本
-python run.py /path/to/novel.txt    # 启动时导入一本小说
+python run.py /path/to/novel.txt    # 启动时自动导入一本并进入阅读
 python run.py a.txt b.txt           # 一次导入多本（拼接为一部）
 python run.py -d /path/to/data      # 自定义数据目录
 ```
@@ -64,7 +66,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 ## 快速开始
 
 1. 运行 `python run.py`（或 `./init.sh`）进入书架界面。
-2. 按 `I`（或命令行为文件）导入一本 `.txt` 小说。应用会自动识别编码并解析章节。
+2. 导入一本 `.txt` 小说：书架按 `i` 输入文件路径（含中文文件名）回车导入，或直接在命令行传文件自动导入。应用会自动识别编码并解析章节。
 3. 用 `↑`/`↓` 选中书名，按 `Enter` 开始阅读。
 4. 阅读状态自动记忆，下次打开自动回到上次位置。
 

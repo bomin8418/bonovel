@@ -6,11 +6,33 @@
 
 - **Repository root**：`E:\03-aiproject\bo-novel`
 - **Standard startup path**：`python run.py`（或 `./init.sh`）
-- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 66 项，全绿）
+- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 75 项，全绿）
 - **Highest priority unfinished feature**：无（核心功能已全部完成；后续可按 feature_list.json 中的 `planned` 项扩展）
 - **Current blocker**：无
 
 ## Session Record
+
+### 会话：修复退格键空路径无效操作 — 已完成
+
+- **Goal**：验证并修复 `ImportView.on_key` 退格键在 `self.path` 为空时执行 `self.path[:-1]` 的无效操作
+- **Verification**：确认 `ui/import_view.py` L50 存在该写法；空字符串 `""[:-1]` 得 `""`，不报错、无副作用（纯无效操作），问题属实但零影响
+- **Fixed**：L50 加守卫 `if self.path: self.path = self.path[:-1]`
+- **Verification run**：`python -m unittest discover -s tests -t .` → 75 项 OK
+- **Commits**：待提交
+- **Next best action**：无
+
+### 会话：交互导入（路径输入框）+ 启动自动导入 + 宽字符输入修复 — 已完成
+
+- **Goal**：修复书架按 `i` 导入失败（原实现仅在命令行传参后按 i 才有效，无交互导入手段）
+- **Completed**：
+  - 新增 `ui/import_view.py`：按 `i` 打开路径输入框，输入 .txt 路径（含中文文件名）回车导入，Esc/Backspace 支持，失败/取消回书架刷新
+  - 启动自动导入：`python run.py 小说.txt` 启动即导入并进入阅读，不再需要手动按 i（app.run 先 enter_import 再 open_shelf）
+  - `keys.KeyParser` 宽字符修复：`byte>0xFF` 直接返回整码（Windows msvcrt 中文输入）；Unix 下 `>=0x80` 累积 UTF-8 多字节再解码，解决此前中文输入截断/乱码
+- **Verification run**：`python run.py --test` → 75 项 OK（新增 3 项宽字符键解析 + 6 项 ImportFlowTestCase）；冒烟：书架→i→输入路径→回车→进入 ReaderView；Windows 模拟中文路径输入码点正确
+- **Evidence recorded**：见 tests/test_renderer.py::KeyParserTestCase 与 tests/test_import.py
+- **Commits**：待提交
+- **Known risks**：Unix 下非 UTF-8 字节输入可能被当作无效 UTF-8 丢弃；路径含空格需手动输入（未做补齐）
+- **Next best action**：无
 
 ### 会话：优化视图切换/重排延迟（排版折行缓存 + 复用 layouter）— 已完成
 

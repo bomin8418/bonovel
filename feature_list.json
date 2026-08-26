@@ -5,10 +5,10 @@
       "priority": 1,
       "area": "import",
       "title": ".txt 小说导入",
-      "user_visible_behavior": "通过命令行传入一个或多个 .txt 文件后，应用导入并进入阅读。",
+      "user_visible_behavior": "书架按 i 输入 .txt 文件路径回车即可导入（含中文文件名）；命令行传入文件则启动自动导入并进入阅读。",
       "status": "passing",
-      "verification": "python run.py <file.txt> 能启动并显示该小说的书架条目。",
-      "evidence": "端到端冒烟通过：导入后进入 ReaderView，书名正确显示。",
+      "verification": "python run.py <file.txt> 启动即导入并显示该小说；书架按 i 输入路径可交互导入；tests/test_import.py 全过。",
+      "evidence": "ImportFlowTestCase 覆盖启动自动导入、路径输入框导入/空路径/不存在路径/取消；Windows 宽字符（中文路径）输入修复后冒烟通过。",
       "notes": "多文件视为同一部小说的连续章节。"
     },
     {

@@ -99,14 +99,10 @@ class App:
         self.force_redraw = True
 
     def enter_import(self) -> None:
-        """处理文件导入：直接从命令行文件参数或书库现有导入。"""
+        """导入命令行传入的文件（启动自动导入路径）。"""
         if self.import_files:
-            # 启动时传入的文件
             self._import_paths(self.import_files)
             self.import_files = []
-        else:
-            self.toast = "请通过命令行传入 .txt 文件，或（规划中）文件选择器"
-            self.force_redraw = True
 
     def _import_paths(self, paths: List["str | Path"]) -> None:
         try:
@@ -139,7 +135,11 @@ class App:
                 + "请放大终端窗口或调整字号后再试。\n",
             )
             return 2
-        self.open_shelf()
+        # 启动时若命令行传了小说文件：自动导入并进入阅读
+        if self.import_files:
+            self.enter_import()
+        if self._view is None:
+            self.open_shelf()
         raw = keys.enter_raw()
         parser = keys.KeyParser()
         try:
