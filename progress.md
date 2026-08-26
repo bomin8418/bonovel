@@ -12,6 +12,15 @@
 
 ## Session Record
 
+### 会话：发布 v0.1.0 GitHub Release — 已完成
+
+- **Goal**：发布 bo-novel 0.1.0 releases 版本
+- **Completed**：推 tag `v0.1.0`；`gh release create v0.1.0` 上传三个产物（bo_novel-0.1.0-py3-none-any.whl / bonovel.exe / bonovel-0.1.0.vsix），附中文 release notes
+- **Verification run**：`gh release view v0.1.0` → draft/prerelease 均为 false，3 个 asset 齐全
+- **Evidence recorded**：https://github.com/bomin8418/bonovel/releases/tag/v0.1.0
+- **Commits**：仓库已同步（main 与 origin 一致）
+- **Next best action**：无
+
 ### 会话：打包全局安装包（wheel + exe）+ VSCode 终端启动器插件 — 已完成
 
 - **Goal**：产出可全局安装的安装包与 VSCode 插件
