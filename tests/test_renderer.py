@@ -163,5 +163,46 @@ class KeyParserTestCase(unittest.TestCase):
         self.assertEqual(p.resolve(), (keys.ESC, None))
 
 
+class WinExtKeyTestCase(unittest.TestCase):
+    """Windows msvcrt 扩展键（\xe0/\x00 前缀 + 扫描码）→ 逻辑键翻译。"""
+
+    def test_scan_code_mapping(self):
+        self.assertEqual(keys._win_ext_key_sequence("H"), "\x1b[A")
+        self.assertEqual(keys._win_ext_key_sequence("P"), "\x1b[B")
+        self.assertEqual(keys._win_ext_key_sequence("K"), "\x1b[D")
+        self.assertEqual(keys._win_ext_key_sequence("M"), "\x1b[C")
+        self.assertEqual(keys._win_ext_key_sequence("I"), "\x1b[5~")
+        self.assertEqual(keys._win_ext_key_sequence("Q"), "\x1b[6~")
+        self.assertEqual(keys._win_ext_key_sequence("G"), "\x1b[1~")
+        self.assertEqual(keys._win_ext_key_sequence("O"), "\x1b[4~")
+        self.assertIsNone(keys._win_ext_key_sequence("z"))
+
+    def _feed(self, seq: str):
+        p = keys.KeyParser()
+        res = keys.reads_keys(p, [ord(c) for c in seq])
+        return res[0][0]
+
+    def test_arrow_down_via_e0_scan(self):
+        # '\xe0' + 'P' = 下方向键，翻译为 \x1b[B 后解析为 down
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("P")), "down")
+
+    def test_page_up_down_via_e0_scan(self):
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("I")), "pageup")
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("Q")), "pagedown")
+
+    def test_home_end_via_e0_scan(self):
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("G")), "home")
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("O")), "end")
+
+    def test_left_right_via_e0_scan(self):
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("K")), "left")
+        self.assertEqual(self._feed(keys._win_ext_key_sequence("M")), "right")
+
+    def test_f1_via_null_scan(self):
+        # '\x00' + ';' = F1；翻译后为 \x1bOP，解析器未定义 F 键 → unknown
+        self.assertEqual(keys._win_ext_key_sequence(";"), "\x1bOP")
+        self.assertEqual(self._feed("\x1bOP"), "unknown")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -6,11 +6,31 @@
 
 - **Repository root**：`E:\03-aiproject\bo-novel`
 - **Standard startup path**：`PYTHONPATH=src python -m bonovel`（或 `./init.sh`）
-- **Standard verification path**：`python -m unittest discover -s tests -t .`（当前 56 项，全绿）
+- **Standard verification path**：`python -m unittest discover -s tests -t .`（当前 62 项，全绿）
 - **Highest priority unfinished feature**：无（核心功能已全部完成；后续可按 feature_list.json 中的 `planned` 项扩展）
 - **Current blocker**：无
 
 ## Session Record
+
+### 会话：修复 keys.py 缺少 List 类型导入 — 已完成
+
+- **Goal**：验证并修复 `src/bonovel/keys.py` 使用 `List[int]` 但未导入 `List` 的问题
+- **Verification**：确认 L220 `self._pending: List[int] = []` 存在且 `typing` 仅导入了 `Optional, Tuple`；实测 `_make_raw_input()` 正常实例化，**无运行时错误**（`from __future__ import annotations` 使注解惰性化，且函数体内局部变量注解本就不求值），问题属于静态分析级缺陷（mypy/pyright 会报 `List` 未定义）。
+- **Fixed**：第 10 行改为 `from typing import List, Optional, Tuple`
+- **Verification run**：`python -m unittest discover -s tests -t .` → 62 项 OK；`py_compile src/bonovel/keys.py` OK
+- **Commits**：待提交
+- **Next best action**：无
+
+### 会话：修复 Windows 翻页/方向键失效 — 已完成
+
+- **Goal**：修复 Windows 下翻页功能无法使用（方向键、PgUp/PgDn、Home/End 不响应）
+- **Root cause**：`keys._WinInput.read_byte()` 将 msvcrt 扩展键（`\xe0`/`\x00` 前缀 + 扫描码）原样传给 `KeyParser`，`\xe0` 被当作宽字符、`\x00` 被当作 RESIZE，方向键/翻页键永不转成逻辑键。
+- **Completed**：新增 `_WIN_EXT_KEY_SEQ` 扫描码→ANSI 序列表与 `_win_ext_key_sequence()`；`_WinInput` 缓冲并逐字节吐出转义序列，未知扩展键回退为扫描码字符；保留代理对逻辑。`\x00` 不再泄漏为误触发 RESIZE。
+- **Verification run**：`python -m unittest discover -s tests -t .` → 62 项 OK（新增 6 项 WinExtKeyTestCase）；模拟 msvcrt 冒烟输出 down/up/pagedown/left/right/ctrl-c。
+- **Evidence recorded**：见 tests/test_renderer.py::WinExtKeyTestCase；smoke 脚本实测 `_WinInput` 翻译正确。
+- **Commits**：待提交
+- **Known risks**：F1–F4 翻译为 `\x1bOP` 等，解析器未定义 F 键（返回 unknown），不影响阅读功能。
+- **Next best action**：无
 
 ### 会话：终端命令风改造（theme/plain + 首页伪装 + 全局脚本）— 已完成
 

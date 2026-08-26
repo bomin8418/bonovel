@@ -7,7 +7,7 @@ Windows 使用 msvcrt，Unix 使用 termios/tty。均为 Python 标准库。
 from __future__ import annotations
 
 import sys
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 # 逻辑按键常量
 UP = "up"
@@ -57,6 +57,32 @@ _CSI_FINAL = "ABCDHF"
 
 def is_windows() -> bool:
     return sys.platform.startswith("win")
+
+
+# Windows msvcrt 扩展键：getwch() 对特殊键先返回前缀（'\xe0' 或 '\x00'），
+# 再返回扫描码字符。这里把扫描码映射为等价的标准 ANSI 逃逸序列，
+# 使跨平台 KeyParser 能统一识别方向键/翻页键等。
+_WIN_EXT_KEY_SEQ = {
+    "H": "\x1b[A",   # Up
+    "P": "\x1b[B",   # Down
+    "K": "\x1b[D",   # Left
+    "M": "\x1b[C",   # Right
+    "G": "\x1b[1~",  # Home
+    "O": "\x1b[4~",  # End
+    "I": "\x1b[5~",  # PageUp
+    "Q": "\x1b[6~",  # PageDown
+    "R": "\x1b[2~",  # Insert
+    "S": "\x1b[3~",  # Delete
+    ";": "\x1bOP",   # F1
+    "<": "\x1bOQ",   # F2
+    "=": "\x1bOR",   # F3
+    ">": "\x1bOS",   # F4
+}
+
+
+def _win_ext_key_sequence(scan: str) -> "Optional[str]":
+    """Windows 扩展键扫描码对应的 ANSI 逃逸序列；未知键返回 None。"""
+    return _WIN_EXT_KEY_SEQ.get(scan)
 
 
 class KeyParser:
@@ -191,14 +217,26 @@ def _make_raw_input() -> RawInput:
         class _WinInput(RawInput):
             def __init__(self):
                 self._msvcrt = msvcrt
+                self._pending: List[int] = []
 
             def read_byte(self) -> int:
-                # 读宽字符；若为代理对，追加读下半部分
+                # 优先吐出已缓冲的转义序列字节
+                if self._pending:
+                    return self._pending.pop(0)
                 ch = self._msvcrt.getwch()
                 code = ord(ch)
+                # 扩展键：前缀 '\xe0'（方向/功能键）或 '\x00'（传统 F 键）
+                if code in (0xE0, 0x00):
+                    scan = self._msvcrt.getwch()
+                    seq = _win_ext_key_sequence(scan)
+                    if seq is not None:
+                        self._pending = [ord(b) for b in seq[1:]]
+                        return ord(seq[0])
+                    # 未知扩展键：退回扫描码字符本身（如小键盘 /、回车）
+                    return ord(scan)
                 if 0xD800 <= code <= 0xDBFF:  # 高代理
-                    lo = ord(self._msvcrt.getwch())
-                    return code  # 简化：仅传高代理，键层按宽字符处理
+                    self._msvcrt.getwch()
+                    return code
                 return code
 
             def kbhit(self) -> bool:

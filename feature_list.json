@@ -62,8 +62,8 @@
       "title": "跨平台键盘输入",
       "user_visible_behavior": "Windows/macOS/Linux 下方向键、翻页键、Ctrl 组合、resize 均正确响应。",
       "status": "passing",
-      "verification": "python -m unittest discover -s tests -t . 中 KeyParserTestCase 全过。",
-      "evidence": "test_renderer.py 键序列解析测试全绿。",
+      "verification": "python -m unittest discover -s tests -t . 中 KeyParserTestCase/WinExtKeyTestCase 全过。",
+      "evidence": "修复 Windows 扩展键（\\xe0/\\x00 前缀 + 扫描码）未翻译导致方向键/翻页键失效；新增 WinExtKeyTestCase 6 项全绿；msvcrt 冒烟输出 down/up/pagedown/left/right。后续补 keys.py 缺少的 List 类型导入（typing 导入行）。",
       "notes": "msvcrt(Win)/termios(Unix) 平台分支内延迟 import。"
     },
     {
