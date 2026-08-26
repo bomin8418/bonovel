@@ -5,8 +5,8 @@
 
 # --- 三个可配置变量（按项目实际情况修改） ---
 INSTALL_CMD='echo "bo-novel 零第三方依赖，跳过安装"'   # 依赖安装命令（本项无依赖）
-VERIFY_CMD='PYTHONPATH=src python -m unittest discover -s tests -t .'  # 基础验证命令
-START_CMD='PYTHONPATH=src python -m bonovel'           # 启动命令
+VERIFY_CMD='python run.py --test'                      # 基础验证命令
+START_CMD='python run.py'                              # 启动命令
 
 set -e
 

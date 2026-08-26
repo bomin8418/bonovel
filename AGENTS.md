@@ -19,15 +19,16 @@ bo-novel 是一个**终端小说阅读器**（TUI），Python 3.11 纯标准库�
 
 **标准路径**（见 progress.md）：
 
-- 启动：`PYTHONPATH=src python -m bonovel`（或 `./init.sh`）
-- 验证：`python -m unittest discover -s tests -t .`
+- 启动：`python run.py`（或 `./init.sh`）
+- 验证：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`）
 
 ## 目录结构
 
 ```
 bo-novel/
 ├── AGENTS.md              # 本手册
-├── init.sh                # 安装 + 验证 + 启动
+├── run.py                 # 统一启动器：启动 + 测试（python run.py / --test）
+├── init.sh                # 验证 + 启动
 ├── feature_list.json      # 功能清单（状态 + 验证 + 证据）
 ├── progress.md            # 每次会话的进度记录
 ├── src/                   # 生产代码 src/bonovel/
@@ -51,7 +52,7 @@ bo-novel/
 1. **一次只做一个功能**：`feature_list.json` 中同时只能有一个 `in_progress`，做完并验证、写 evidence 后才算通过。
 2. **改动前跑基线**：标准验证命令要绿，否则先修 baseline 再做别的。
 3. **凡声称完成必须有证据**：做了验证却无命令/输出记录，不算 done。
-4. **提交前验证**：改完跑 `python -m unittest discover -s tests -t .` 全绿；`git status` 确认改动范围干净。
+4. **提交前验证**：改完跑 `python run.py --test` 全绿；`git status` 确认改动范围干净。
 5. **跨平台**：msvcrt/termios/ctypes 在平台分支内延迟 import，不在顶层 import；路径用 pathlib.Path。
 6. **改动收尾更新文档**：更新 progress.md 的 Session Record、feature_list.json 的 status/evidence。
 
@@ -60,7 +61,7 @@ bo-novel/
 一个功能/改动「完成」必须同时满足：
 
 1. 标准启动路径能跑（`./init.sh` 或等价命令）。
-2. 标准验证路径全绿（`python -m unittest discover -s tests -t .`）。
+2. 标准验证路径全绿（`python run.py --test`）。
 3. `feature_list.json` 里该项 status 更新为 `passing` 且 evidence 有实跑命令/输出。
 4. `progress.md` 更新了 Current Verified State 与 Session Record。
 5. 无半成品：`git status` 干净（或改动已提交），下一会话无需手工修补即可继续。
@@ -72,6 +73,6 @@ bo-novel/
 
 ## 已知环境限制
 
-- `pip install -e .` 在本会话沙箱被权限拦截；用 `./init.sh` 或 `PYTHONPATH=src` 回退。
+- `pip install -e .` 在本会话沙箱被权限拦截；用 `./init.sh` 或 `python run.py` 回退。
 - `python3` 在 Windows 是占位别名；脚本探测真实可用解释器。
 - 终端交互无法自动化验证，用「构造 App + 直接调用视图」的冒烟脚本替代。

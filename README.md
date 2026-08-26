@@ -24,29 +24,23 @@
 
 不需要安装任何第三方依赖，只要你的机器有 **Python 3.9 及以上**即可。
 
-**推荐：一键 `./init.sh`（安装 + 验证 + 打印启动命令）**：
+**推荐：一条命令启动（跨平台统一入口 `run.py`）**：
 
 ```bash
-./init.sh                       # 安装（跳过）+ 验证 + 打印启动命令
-RUN_START_COMMAND=1 ./init.sh  # 验证后直接启动
+python run.py                       # 打开书架
+python run.py --version             # 查看版本
+python run.py /path/to/novel.txt    # 启动时导入一本小说
+python run.py a.txt b.txt           # 一次导入多本（拼接为一部）
+python run.py -d /path/to/data      # 自定义数据目录
 ```
 
+`run.py` 位于项目根目录，自动把 `src/` 加入导入路径，无需设置 `PYTHONPATH`，Windows / macOS / Linux 通用。
+
+**一键 `./init.sh`（验证 + 打印启动命令）**：
+
 ```bash
-# 直接以模块方式运行（src 布局，需 PYTHONPATH=src）
-PYTHONPATH=src python -m bonovel
-
-# 查看版本 / 帮助
-PYTHONPATH=src python -m bonovel --version
-PYTHONPATH=src python -m bonovel --help
-
-# 启动时直接导入一本小说
-PYTHONPATH=src python -m bonovel /path/to/novel.txt
-
-# 一次导入多本（拼接为一部）
-PYTHONPATH=src python -m bonovel a.txt b.txt
-
-# 自定义数据目录（书库/配置/日志存放处）
-PYTHONPATH=src python -m bonovel -d /path/to/data
+./init.sh                       # 验证 + 打印启动命令
+RUN_START_COMMAND=1 ./init.sh  # 验证后直接启动
 ```
 
 **免安装、全局以命令运行**（推荐给不想 `pip install` 的人）：
@@ -60,7 +54,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 ./bin/bonovel --version
 ```
 
-启动脚本会临时把 `src/` 加入 `PYTHONPATH` 再调用 `python -m bonovel`，
+启动脚本内部统一委托根目录 `run.py`（临时把 `src/` 加入 `sys.path` 再调用应用），
 因此**无需 pip 安装**即可在任意目录以 `bonovel` 命令使用（直接调用脚本路径）。
 
 > 也可以设置环境变量 `BONOVEL_DATA_DIR` 指定数据目录（优先于系统默认）。
@@ -69,7 +63,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 
 ## 快速开始
 
-1. 运行 `./init.sh`（或 `PYTHONPATH=src python -m bonovel`）进入书架界面。
+1. 运行 `python run.py`（或 `./init.sh`）进入书架界面。
 2. 按 `I`（或命令行为文件）导入一本 `.txt` 小说。应用会自动识别编码并解析章节。
 3. 用 `↑`/`↓` 选中书名，按 `Enter` 开始阅读。
 4. 阅读状态自动记忆，下次打开自动回到上次位置。
@@ -157,7 +151,8 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 
 ```bash
 # 运行全部单元测试（依赖较少，无网络）
-python -m unittest discover -s tests -t . -v
+python run.py --test
+# 等价于：python -m unittest discover -s tests -t . -v
 ```
 
 测试覆盖：编码检测（UTF-8/GBK/GB18030/Big5、BOM、乱码判定）、章节解析、大文件行索引、分页/滚动排版边界、键序列解析、主题字段、书库持久化、进度/书签序列化、配置读写。

@@ -5,12 +5,22 @@
 ## Current Verified State
 
 - **Repository root**：`E:\03-aiproject\bo-novel`
-- **Standard startup path**：`PYTHONPATH=src python -m bonovel`（或 `./init.sh`）
-- **Standard verification path**：`python -m unittest discover -s tests -t .`（当前 62 项，全绿）
+- **Standard startup path**：`python run.py`（或 `./init.sh`）
+- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 62 项，全绿）
 - **Highest priority unfinished feature**：无（核心功能已全部完成；后续可按 feature_list.json 中的 `planned` 项扩展）
 - **Current blocker**：无
 
 ## Session Record
+
+### 会话：统一启动/测试入口（run.py + 脚本瘦身）— 已完成
+
+- **Goal**：简化启动与测试流程，全平台一条命令搞定
+- **Completed**：新增根目录 `run.py` 统一启动器（`python run.py` 启动、`python run.py --test` 跑测试，透传其余 CLI 参数）；`init.sh`/`bonovel.bat`/`bin/bonovel` 全部瘦身委托 run.py；README/AGENTS.md 标准路径同步为 `python run.py` / `python run.py --test`
+- **Verification run**：`python run.py --test` → 62 项 OK；`python run.py --version` → bo-novel 0.1.0；旧命令 `python -m unittest discover -s tests -t .` 回归仍绿
+- **Evidence recorded**：run.py 实跑输出见上；README/AGENTS.md/脚本已读确证
+- **Commits**：待提交
+- **Known risks**：无
+- **Next best action**：无
 
 ### 会话：修复 keys.py 缺少 List 类型导入 — 已完成
 

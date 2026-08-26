@@ -7,7 +7,7 @@
       "title": ".txt 小说导入",
       "user_visible_behavior": "通过命令行传入一个或多个 .txt 文件后，应用导入并进入阅读。",
       "status": "passing",
-      "verification": "PYTHONPATH=src python -m bonovel <file.txt> 能启动并显示该小说的书架条目。",
+      "verification": "python run.py <file.txt> 能启动并显示该小说的书架条目。",
       "evidence": "端到端冒烟通过：导入后进入 ReaderView，书名正确显示。",
       "notes": "多文件视为同一部小说的连续章节。"
     },
@@ -117,19 +117,19 @@
       "title": "CLI 入口",
       "user_visible_behavior": "--version/--help/-d 数据目录/FILE 参数均可用。",
       "status": "passing",
-      "verification": "PYTHONPATH=src python -m bonovel --version 输出 bo-novel 0.1.0。",
-      "evidence": "--version 与 --help 冒烟通过。",
+      "verification": "python run.py --version 输出 bo-novel 0.1.0。",
+      "evidence": "--version 与 --help 冒烟通过（run.py 透传）。",
       "notes": ""
     },
     {
       "id": "launcher",
       "priority": 4,
       "area": "cli",
-      "title": "免 pip 全局启动脚本",
-      "user_visible_behavior": "init.sh（POSIX）与 bonovel.bat（Windows）可免 pip 全局运行。",
+      "title": "统一入口与免 pip 全局启动脚本",
+      "user_visible_behavior": "根目录 run.py 一条命令启动/测试（python run.py / --test）；init.sh（POSIX）与 bonovel.bat（Windows）可免 pip 全局运行。",
       "status": "passing",
-      "verification": "./bin/bonovel --version 输出 bo-novel 0.1.0；./init.sh 跑完验证并打印启动命令。",
-      "evidence": "POSIX 脚本实测 exit 0；init.sh 可执行且语法通过。",
+      "verification": "python run.py --test 全绿；python run.py --version 输出 bo-novel 0.1.0；./bin/bonovel --version 输出 bo-novel 0.1.0。",
+      "evidence": "run.py --test 62 项 OK、--version 0.1.0 实跑通过；init.sh/bonovel.bat/bin/bonovel 均委托 run.py。",
       "notes": "解释器探测绕开 Windows python3 占位别名。"
     }
   ]
