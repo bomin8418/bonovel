@@ -12,6 +12,17 @@
 
 ## Session Record
 
+### 会话：分页缩进改为「段首缩进 · 续行顶格」— 已完成
+
+- **Goal**：修复正文"第一行顶格、之后全部缩进"的不一致观感
+- **Root cause**：`_build_pages` 按"每页首行不缩进、其余全缩进"处理（first_row_of_page 特例），页内段落首行与续行无法区分，每翻一页首行顶格显得突兀
+- **Completed**：`layout.py` 去掉 `first_row_of_page`，改为每个逻辑行（段落）仅首行加 `INDENT`，续行顶格；页面在逻辑行间断开故页首恒为段落首行，全篇一致；滚动模式本就统一缩进不受影响
+- **Verification run**：`python run.py --test` → 82 项 OK（新增 2 项段首缩进测试）；冒烟：60 字段落折 4 行（首行 INDENT + 3 行 flush）、两段各自首行缩进
+- **Evidence recorded**：见 tests/test_renderer.py::LayoutPageTestCase；冒烟输出见上
+- **Commits**：待提交
+- **Known risks**：章标题行（书内文本行）也按段落首行缩进处理；超大段落超一屏时仍有既有分页溢出问题（非本次范围）
+- **Next best action**：无
+
 ### 会话：迁移旧默认主题 plain → plain-dark（自动升级）— 已完成
 
 - **Goal**：修复暗色模式下已保存 config.json（theme:plain 白底）仍然刺眼的问题

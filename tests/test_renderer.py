@@ -6,6 +6,7 @@ import unittest
 
 from bonovel import keys, renderer, themes
 from bonovel.layout import (
+    INDENT,
     ScrollWindow,
     NovelLayouter,
     visible_lines,
@@ -105,6 +106,45 @@ class LayoutPageTestCase(unittest.TestCase):
         for row in p.rows:
             # 含缩进也不超过可用宽度太多
             self.assertLessEqual(len(row), width + 1)
+
+    def test_paragraph_first_line_indent_only(self):
+        # 单段 60 字在窄屏折成多行：仅首行缩进，续行顶格
+        self._lines = ["一二三四五六七八九十一二三四五六七八九十" * 3]
+        lay = NovelLayouter(
+            len(self._lines),
+            lambda i: self.lines_func(i),
+            columns=20,
+            rows=24,
+            font_size=1,
+            line_spacing=1,
+        )
+        p = lay.page_at(0)
+        self.assertGreaterEqual(len(p.rows), 3)
+        self.assertTrue(p.rows[0].startswith(INDENT))
+        for row in p.rows[1:]:
+            self.assertFalse(row.startswith(INDENT))
+
+    def test_multi_paragraph_each_first_line_indented(self):
+        # 两段（含空行分隔），各 18 字在最小可用宽度下恰好折成 2 行：
+        # 每段首行缩进、续行顶格
+        para_a = "一" * 18
+        para_b = "二" * 18
+        self._lines = [para_a, "", para_b]
+        lay = NovelLayouter(
+            len(self._lines),
+            lambda i: self.lines_func(i),
+            columns=20,
+            rows=24,
+            font_size=1,
+            line_spacing=1,
+        )
+        p = lay.page_at(0)
+        rows = [r for r in p.rows if r != ""]
+        # 段甲首行缩进、续行顶格；段乙同
+        self.assertTrue(rows[0].startswith(INDENT))
+        self.assertFalse(rows[1].startswith(INDENT))
+        self.assertTrue(rows[2].startswith(INDENT))
+        self.assertFalse(rows[3].startswith(INDENT))
 
 
 class LayoutReflowTestCase(unittest.TestCase):

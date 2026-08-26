@@ -41,8 +41,8 @@
       "user_visible_behavior": "分页模式整屏翻页；滚动模式逐行滚；按 p 一键切换。",
       "status": "passing",
       "verification": "python -m unittest discover -s tests -t . 中 LayoutPageTestCase/ScrollWindowTestCase/LayoutReflowTestCase 全过。",
-      "evidence": "test_renderer.py 排版与滚动测试全绿；reflow 复用折行缓存：退出设置无布局变化 ~0s、字号/行数变更 50k 行 0.07-0.11s。",
-      "notes": "支持字号/行距档位、中文首行缩进、页码进度；折行结果按宽度缓存，视图切换不再全量重建。"
+      "evidence": "test_renderer.py 排版与滚动测试全绿；reflow 复用折行缓存：退出设置无布局变化 ~0s、字号/行数变更 50k 行 0.07-0.11s；段首缩进/续行顶格布局测试通过。",
+      "notes": "支持字号/行距档位、中文首行缩进（段首缩进·续行顶格）、页码进度；折行结果按宽度缓存，视图切换不再全量重建。"
     },
     {
       "id": "themes",

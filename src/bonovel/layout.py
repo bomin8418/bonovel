@@ -183,7 +183,6 @@ class NovelLayouter:
         current_rows: List[str] = []
         current_line_start = 0
         total = self.total_lines
-        first_row_of_page = True
 
         line_index = 0
         while line_index < total:
@@ -195,16 +194,17 @@ class NovelLayouter:
                 )
                 current_line_start = line_index
                 current_rows = []
-                first_row_of_page = True
             if wrapped:
-                # 每页第一行不缩进（章节起始/正文开头）
-                prefix = INDENT if (self.indent and not first_row_of_page) else ""
-                current_rows.extend(prefix + w for w in wrapped)
+                # 段首缩进：每个逻辑行（段落）仅首行缩进，续行顶格
+                first = True
+                for w in wrapped:
+                    prefix = INDENT if (self.indent and first) else ""
+                    current_rows.append(prefix + w)
+                    first = False
             else:
                 # 空行表示段落分隔：仅当已在本页有内容时追加
                 if current_rows:
                     current_rows.append("")
-            first_row_of_page = False
             line_index += 1
 
         if current_rows:
