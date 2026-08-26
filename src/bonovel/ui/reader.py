@@ -36,20 +36,28 @@ class ReaderView(View):
         self.mode = self.cfg.get("reading_mode", "page")
         self.stats = ReadingStats()
         self._app_page = 0
+        self.layouter = None
         self._reflow()
 
     # ---------- 布局 ----
     def _reflow(self) -> None:
-        usable_rows = self.rows - 2  # 顶部 1 + 底部 1
-        self.layouter = NovelLayouter(
-            self.novel.line_count,
-            self.novel.line_text,
-            columns=self.columns,
-            rows=self.rows,
-            font_size=self.cfg.get("font_size", 1),
-            line_spacing=self.cfg.get("line_spacing", 1),
-            indent=True,
-        )
+        cols = self.columns
+        rows = self.rows
+        font_size = self.cfg.get("font_size", 1)
+        line_spacing = self.cfg.get("line_spacing", 1)
+        if self.layouter is None:
+            self.layouter = NovelLayouter(
+                self.novel.line_count,
+                self.novel.line_text,
+                columns=cols,
+                rows=rows,
+                font_size=font_size,
+                line_spacing=line_spacing,
+                indent=True,
+            )
+        else:
+            # 复用现有排版器：参数未变则跳过，宽度未变则只重排不复折
+            self.layouter.reflow(cols, rows, font_size, line_spacing)
         self.total_pages = max(self.layouter.page_count(), 1)
         self._app_page = max(0, min(self._app_page, self.total_pages - 1))
         self.scroll = ScrollWindow(self.novel.line_count, self.cfg.get("scroll_step", 3))

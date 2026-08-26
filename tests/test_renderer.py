@@ -107,6 +107,60 @@ class LayoutPageTestCase(unittest.TestCase):
             self.assertLessEqual(len(row), width + 1)
 
 
+class LayoutReflowTestCase(unittest.TestCase):
+    """reflow 复用折行缓存：参数未变跳过、宽度未变只重排。"""
+
+    def _lines(self, n):
+        return [f"这是第{i}行用于重排测试的正文内容文本段落。" for i in range(n)]
+
+    def _make(self, n=200, columns=80, rows=24):
+        lines = self._lines(n)
+        return NovelLayouter(
+            len(lines),
+            lambda i: lines[i],
+            columns=columns,
+            rows=rows,
+            font_size=1,
+            line_spacing=1,
+        )
+
+    def test_reflow_same_params_keeps_pages(self):
+        lay = self._make()
+        before = lay.page_count()
+        first_before = lay.page_at(0)
+        lay.reflow(80, 24, 1, 1)  # 参数未变：应直接返回
+        self.assertEqual(lay.page_count(), before)
+        self.assertEqual(lay.page_at(0).start_line, first_before.start_line)
+
+    def test_reflow_font_change_repartitions(self):
+        lay = self._make(rows=24)
+        pc_normal = lay.page_count()
+        lay.reflow(80, 24, 2, 1)  # 大字号 → 更多页
+        self.assertGreater(lay.page_count(), pc_normal)
+        self.assertEqual(lay.page_at(lay.page_count() - 1).end_line, 199)
+
+    def test_reflow_rows_change_covers_all(self):
+        lay = self._make(n=300, rows=30)
+        lay.reflow(80, 12, 1, 1)  # 更少行 → 页数变多
+        last = lay.page_at(lay.page_count() - 1)
+        self.assertEqual(last.end_line, 299)
+        # 覆盖 0..299 全部行
+        seen = set()
+        for i in range(lay.page_count()):
+            p = lay.page_at(i)
+            seen.add(p.start_line)
+            seen.add(p.end_line)
+        self.assertIn(0, seen)
+        self.assertIn(299, seen)
+
+    def test_reflow_width_change_rebuilds(self):
+        lay = self._make(n=150, columns=80)
+        lay.reflow(30, 24, 1, 1)  # 变窄 → 每行折成多行 → 页数变多
+        self.assertGreater(lay.page_count(), self._make(n=150, columns=80).page_count())
+        last = lay.page_at(lay.page_count() - 1)
+        self.assertEqual(last.end_line, 149)
+
+
 class ScrollWindowTestCase(unittest.TestCase):
     def test_scroll_limits(self):
         w = ScrollWindow(10, step=3)

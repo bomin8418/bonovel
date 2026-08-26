@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import List
 
 from bonovel import utils
@@ -23,6 +24,12 @@ _FONT_SIZE_ROWS = {0: float("inf"), 1: 1.0, 2: 1.4}
 _LINE_SPACING = {0: 0.0, 1: 1.0, 2: 2.0}
 # 段间距基元（空行数）
 PARAGRAPH_GAP = 1
+
+
+@lru_cache(maxsize=8192)
+def _char_width(ch: str) -> int:
+    """字符显示宽度（缓存结果，避免逐字符 unicodedata 开销）。"""
+    return 2 if utils.display_width(ch) > 1 else 1
 
 
 class Page:
@@ -99,8 +106,11 @@ class NovelLayouter:
         self.font_size = font_size
         self.line_spacing = line_spacing
         self.indent = indent
-        self._pages: List[Page] = []
         self.total_lines = total_lines
+        # 折行结果缓存：以所用宽度为键；宽度不变时 reflow 只重排不复折
+        self._rows: List[List[str]] = []
+        self._rows_width: int = -1
+        self._pages: List[Page] = []
         self._build_pages()
 
     def _count_lines(self) -> int:
@@ -111,34 +121,63 @@ class NovelLayouter:
         if width <= 0:
             return [text]
         lines: List[str] = []
-        cur = ""
+        cur: List[str] = []
         cur_w = 0
         for ch in text:
-            w = 2 if utils.display_width(ch) > 1 else 1
+            w = 1 if ch.isascii() else _char_width(ch)
             if cur_w + w > width:
-                lines.append(cur)
-                cur = ch
+                lines.append("".join(cur))
+                cur = [ch]
                 cur_w = w
             else:
-                cur += ch
+                cur.append(ch)
                 cur_w += w
         if cur:
-            lines.append(cur)
+            lines.append("".join(cur))
         if not lines:
             lines = [""]
         return lines
 
-    def _row_for(self, line_text: str, width: int, indent: bool) -> int:
-        """估算该段折行后占用的行数。"""
-        text = line_text.strip()
+    def _wrap_line(self, i: int) -> List[str]:
+        """第 i 行的折行结果（不含缩进前缀）；空行返回空列表。"""
+        text = self.lines_func_line(i).strip()
         if not text:
-            return PARAGRAPH_GAP if indent else 1
-        prefix_w = len(INDENT) if indent else 0
-        lines = self._wrap(text, width - prefix_w) if indent else self._wrap(text, width)
-        return len(lines)
+            return []
+        if self.indent:
+            return self._wrap(text, self.width - len(INDENT))
+        return self._wrap(text, self.width)
+
+    def reflow(
+        self,
+        columns: int,
+        rows: int,
+        font_size: int,
+        line_spacing: int,
+    ) -> None:
+        """按新参数重排；参数未变直接返回，宽度未变时复用折行缓存。"""
+        new_width = _usable_width(columns)
+        if (
+            new_width == self.width
+            and rows == self.rows
+            and font_size == self.font_size
+            and line_spacing == self.line_spacing
+        ):
+            return
+        if new_width != self.width:
+            self.width = new_width
+            self._rows = []
+            self._rows_width = -1
+        self.rows = rows
+        self.font_size = font_size
+        self.line_spacing = line_spacing
+        self._build_pages()
 
     def _build_pages(self) -> None:
-        """按行索引把连续文本切成多页。"""
+        """按行索引把连续文本切成多页（折行结果按宽度缓存复用）。"""
+        if not self._rows or self._rows_width != self.width:
+            self._rows = [self._wrap_line(i) for i in range(self.total_lines)]
+            self._rows_width = self.width
+        rows_cache = self._rows
         max_rows = _lines_per_screen(self.rows, self.font_size, self.line_spacing)
         pages: List[Page] = []
         current_rows: List[str] = []
@@ -146,20 +185,10 @@ class NovelLayouter:
         total = self.total_lines
         first_row_of_page = True
 
-        def row_count(text: str) -> int:
-            text_s = text.strip()
-            if not text_s:
-                return 1  # 空行占一行
-            if not self.indent:
-                return len(self._wrap(text_s, self.width))
-            return len(self._wrap(text_s, self.width - len(INDENT)))
-
         line_index = 0
         while line_index < total:
-            text = self.lines_func_line(line_index)
-            # 每页第一行不缩进（章节起始/正文开头）
-            use_indent = self.indent and not first_row_of_page
-            count = row_count(text)
+            wrapped = rows_cache[line_index]
+            count = len(wrapped) if wrapped else 1  # 空行占一行
             if current_rows and len(current_rows) + count > max_rows:
                 pages.append(
                     self._make_page(current_line_start, line_index - 1, current_rows)
@@ -167,13 +196,9 @@ class NovelLayouter:
                 current_line_start = line_index
                 current_rows = []
                 first_row_of_page = True
-            text_s = text.strip()
-            if text_s:
+            if wrapped:
+                # 每页第一行不缩进（章节起始/正文开头）
                 prefix = INDENT if (self.indent and not first_row_of_page) else ""
-                if self.indent:
-                    wrapped = self._wrap(text_s, self.width - len(INDENT))
-                else:
-                    wrapped = self._wrap(text_s, self.width)
                 current_rows.extend(prefix + w for w in wrapped)
             else:
                 # 空行表示段落分隔：仅当已在本页有内容时追加

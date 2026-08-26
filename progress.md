@@ -6,11 +6,22 @@
 
 - **Repository root**：`E:\03-aiproject\bo-novel`
 - **Standard startup path**：`python run.py`（或 `./init.sh`）
-- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 62 项，全绿）
+- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 66 项，全绿）
 - **Highest priority unfinished feature**：无（核心功能已全部完成；后续可按 feature_list.json 中的 `planned` 项扩展）
 - **Current blocker**：无
 
 ## Session Record
+
+### 会话：优化视图切换/重排延迟（排版折行缓存 + 复用 layouter）— 已完成
+
+- **Goal**：修复进入帮助/设置/章节目录后退出偶发明显卡顿（用户重复按键导致双重跳转）
+- **Root cause**：退出设置强制 `resize()→_reflow()` 全量重建所有页（`_build_pages` 逐行解码 + 折行两次 + 逐字符 `unicodedata` 宽度计算）。实测 50k 行重建约 7.9s。
+- **Completed**：`layout.py` 新增 `_char_width` 缓存、`_wrap` 列表累积 + ASCII 快径、`_build_pages` 每行只折行一次并按宽度缓存 `_rows`；新增 `reflow()`（参数未变直接返回、宽度未变只重排不复折）。`reader.py` 的 `_reflow()` 改为首次创建、之后复用 layouter。
+- **Verification run**：`python run.py --test` → 66 项 OK（新增 4 项 LayoutReflowTestCase）；50k 行基准：首次构建 7.9→1.7s、无变化 reflow ~0s、字号/行数 reflow 0.07-0.11s；ReaderView 冒烟同尺寸 resize ~0s。
+- **Evidence recorded**：见 tests/test_renderer.py::LayoutReflowTestCase；基准/冒烟输出见上。
+- **Commits**：待提交
+- **Known risks**：宽度变化（终端 resize）仍会全量重折行（50k 行约 1.9s），属可接受偶发。
+- **Next best action**：无
 
 ### 会话：统一启动/测试入口（run.py + 脚本瘦身）— 已完成
 
