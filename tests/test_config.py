@@ -36,7 +36,7 @@ class ConfigTestCase(unittest.TestCase):
         a = default_config()
         b = default_config()
         a["theme"] = "dark"
-        self.assertEqual(b["theme"], "sepia")
+        self.assertEqual(b["theme"], "plain")
 
     def test_load_without_file_returns_defaults(self):
         cfg = load_config(self.tmp)

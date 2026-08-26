@@ -12,6 +12,16 @@
 
 ## Session Record
 
+### 会话：默认主题改为黑白灰（plain）— 已完成
+
+- **Goal**：将默认主题从 sepia（暖黄）改为黑白灰的 plain（命令行·单色）
+- **Completed**：config.py 默认 `theme` 改为 `"plain"`；themes.py `default_theme()` 返回 plain；同步更新 test_config/test_renderer 默认断言
+- **Verification run**：`python -m unittest discover -s tests -t .` → 56 项 OK
+- **Evidence recorded**：无新增提交；测试全绿
+- **Commits**：无
+- **Known risks**：老用户（已有 config.json）默认主题不受影响，仍为 sepia，可自行在设置切换
+- **Next best action**：无
+
 ### 会话：终端命令风改造（theme/plain + 首页伪装 + 全局脚本）— 已完成
 
 - **Goal**：新增 plain（命令行·单色）主题、书架首页伪装成命令行工具、免 pip 全局启动脚本

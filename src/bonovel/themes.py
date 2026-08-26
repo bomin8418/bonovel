@@ -89,7 +89,7 @@ def get_theme(name: str) -> Theme:
 
 
 def default_theme() -> Theme:
-    return _THEMES["sepia"]
+    return _THEMES["plain"]
 
 
 def describe_themes() -> str:
