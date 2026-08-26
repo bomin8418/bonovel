@@ -64,6 +64,23 @@ class ConfigTestCase(unittest.TestCase):
         with self.assertRaises(Exception):
             load_config(self.tmp)
 
+    def test_legacy_plain_config_migrated_to_plain_dark(self):
+        # 旧默认 plain（无 theme_source）自动升级为暗色 plain-dark
+        (self.dir / CONFIG_FILENAME).write_text(
+            json.dumps({"theme": "plain"}), encoding="utf-8"
+        )
+        cfg = load_config(self.tmp)
+        self.assertEqual(cfg["theme"], "plain-dark")
+
+    def test_manual_plain_theme_not_migrated(self):
+        # 手动选择 plain 的用户不受迁移影响
+        (self.dir / CONFIG_FILENAME).write_text(
+            json.dumps({"theme": "plain", "theme_source": "manual"}),
+            encoding="utf-8",
+        )
+        cfg = load_config(self.tmp)
+        self.assertEqual(cfg["theme"], "plain")
+
     def test_corrupt_json_raises(self):
         (self.dir / CONFIG_FILENAME).write_text("{not json", encoding="utf-8")
         with self.assertRaises(Exception):

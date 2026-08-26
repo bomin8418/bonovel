@@ -12,6 +12,17 @@
 
 ## Session Record
 
+### 会话：迁移旧默认主题 plain → plain-dark（自动升级）— 已完成
+
+- **Goal**：修复暗色模式下已保存 config.json（theme:plain 白底）仍然刺眼的问题
+- **Root cause**：上一轮仅改新默认值，本机 `~/.bonovel/config.json` 仍存着旧默认 `plain`（白底），加载时不会自动变暗
+- **Completed**：`config` 新增内部字段 `theme_source`（auto/manual，auto=未手动改过）；`load_config` 中若 theme 为旧默认 plain 且 source 为 auto 则迁移为 plain-dark（仅内存、幂等）；`settings_view` 切主题时置 source=manual 标记手动选择不受迁移影响；`_validate` 校验 source 取值
+- **Verification run**：`python run.py --test` → 80 项 OK（新增 2 项迁移测试 + 更新 test_stats 手动 plain 用例）；冒烟：本机旧配置 load 后 theme=plain-dark，手动 plain 保留
+- **Evidence recorded**：见 tests/test_config.py 迁移两项 + tests/test_stats.py
+- **Commits**：待提交
+- **Known risks**：历史未手动选过的 plain 配置一律迁移（无法区分旧自动写入与早期手动选择）；此后用户切换主题即打上 manual 标记，不再误迁移
+- **Next best action**：无
+
 ### 会话：修复大写按键（C/P/G/B/Q 等）无响应 — 已完成
 
 - **Goal**：修复按提示大写 `C` 打开设置无反应（及 P/G/B/Q/I/D 同理）

@@ -27,6 +27,7 @@ LOG_FILENAME = "bonovel.log"
 DEFAULTS: Dict[str, Any] = {
     # --- 阅读外观 ---
     "theme": "plain-dark",      # 内置主题名，见 themes.py
+    "theme_source": "auto",     # 内部字段：auto=从未手动改过主题（旧默认 plain 会被迁移）
     "font_size": 1,          # 0=小 1=标准 2=大（影响页面密度，非真实变宽字体）
     "line_spacing": 1,       # 0=紧凑 1=标准 2=宽松
     # --- 阅读行为 ---
@@ -45,6 +46,7 @@ DEFAULTS: Dict[str, Any] = {
 _MODE_VALUES = ("page", "scroll")
 _FONT_SIZES = (0, 1, 2)
 _LINE_SPACINGS = (0, 1, 2)
+_THEME_SOURCES = ("auto", "manual")
 
 
 def default_config() -> Dict[str, Any]:
@@ -95,6 +97,8 @@ def _merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
 def _validate(cfg: Dict[str, Any]) -> None:
     if cfg["theme"] not in themes.theme_names():
         raise ConfigError(f"无效主题：{cfg['theme']!r}")
+    if cfg.get("theme_source") not in _THEME_SOURCES:
+        raise ConfigError(f"无效主题来源：{cfg.get('theme_source')!r}")
     if cfg["font_size"] not in _FONT_SIZES:
         raise ConfigError(f"无效字号：{cfg['font_size']!r}")
     if cfg["line_spacing"] not in _LINE_SPACINGS:
@@ -118,6 +122,9 @@ def load_config(directory: str | Path | None = None) -> Dict[str, Any]:
             raise ConfigError(f"配置文件无法读取 {path}：{exc}") from exc
         if isinstance(raw, dict):
             cfg = _merge(cfg, raw)
+    # 迁移：历史自动写入的旧默认 plain 升级为暗色 plain-dark（手动选择不受影响）
+    if cfg["theme"] == "plain" and cfg.get("theme_source") == "auto":
+        cfg["theme"] = "plain-dark"
     _validate(cfg)
     return cfg
 

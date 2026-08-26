@@ -53,13 +53,16 @@ class ThemeNamesTestCase(unittest.TestCase):
         t = get_theme("plain")
         self.assertTrue(t.background and t.foreground and t.header_fg)
 
-        # config 校验应接受 plain（写临时 config.json 再 load）
+        # config 校验应接受手动选择的 plain（写临时 config.json 再 load）
         import json
 
         tmp = tempfile.mkdtemp()
         try:
             p = Path(tmp) / "config.json"
-            p.write_text(json.dumps({"theme": "plain"}), encoding="utf-8")
+            p.write_text(
+                json.dumps({"theme": "plain", "theme_source": "manual"}),
+                encoding="utf-8",
+            )
             from bonovel import config as cfg_mod
 
             loaded = cfg_mod.load_config(tmp)

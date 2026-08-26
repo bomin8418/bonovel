@@ -52,8 +52,8 @@
       "user_visible_behavior": "7 套主题（sepia/classic/dark/paper/terminal/plain/plain-dark）可即时切换并持久化。",
       "status": "passing",
       "verification": "python -m unittest discover -s tests -t . 中 ThemeNamesTestCase/test_plain_theme_available 全过。",
-      "evidence": "设置界面切换主题后 config.json 落盘正确；默认主题为 plain-dark（暗底单色，贴合暗色终端）。",
-      "notes": "plain-dark 为「命令行·单色暗」主题，新用户默认；plain（白底）保留供亮色环境切换。已有 config.json 存了旧主题的用户不自动生效。"
+      "evidence": "设置界面切换主题后 config.json 落盘正确；默认主题为 plain-dark（暗底单色，贴合暗色终端）；旧默认 plain 配置自动迁移（theme_source 标记手动选择不迁移）。",
+      "notes": "plain-dark 为「命令行·单色暗」主题，新用户默认；plain（白底）保留供亮色环境切换。历史 config.json 里 auto 来源的 plain 加载时自动升级为 plain-dark。"
     },
     {
       "id": "keyboard",

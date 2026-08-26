@@ -88,6 +88,7 @@ class SettingsView(View):
             names = theme_names()
             idx = names.index(self.cfg["theme"]) if self.cfg["theme"] in names else 0
             self.cfg["theme"] = names[(idx + delta) % len(names)]
+            self.cfg["theme_source"] = "manual"  # 标记用户主动选择，不再迁移
             self.app.apply_theme(self.cfg["theme"])
         elif key == "font_size":
             self.cfg["font_size"] = (int(self.cfg["font_size"]) + delta) % 3
