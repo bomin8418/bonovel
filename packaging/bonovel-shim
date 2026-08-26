@@ -1,0 +1,28 @@
+#!/bin/sh
+# bonovel - Git Bash global command (auto-locates the installed bo-novel exe).
+# Installed to ~/bin/bonovel by install_global.bat. ~/bin is always on the
+# Git Bash PATH, so this works even before the Windows PATH refresh applies.
+resolve() {
+  for P in "$@"; do
+    [ -n "$P" ] || continue
+    if command -v cygpath >/dev/null 2>&1; then
+      Q="$(cygpath -u "$P" 2>/dev/null || echo "$P")"
+    else
+      Q="$P"
+    fi
+    if [ -x "$Q" ]; then
+      echo "$Q"
+      return 0
+    fi
+  done
+  return 1
+}
+EXE="$(resolve \
+  "$LOCALAPPDATA/bonovel/bonovel.exe" \
+  "$SystemDrive/Python311/Scripts/bonovel.exe" \
+  "/c/Python311/Scripts/bonovel.exe")"
+if [ -z "$EXE" ]; then
+  echo "bonovel: bo-novel executable not found. Run install_global.bat/.sh first." >&2
+  exit 1
+fi
+exec "$EXE" "$@"

@@ -72,6 +72,9 @@ install_global.bat exe         # 复制独立 bonovel.exe 并加入 PATH
 ./install_global.sh            # pip install --user
 ```
 
+> **Git Bash 用户**：`install_global.bat` 还会把 `packaging/bonovel-shim` 安装为 `~/bin/bonovel`
+> （`~/bin` 始终在 Git Bash 的 PATH 上，不受 Windows PATH 刷新时机影响），因此 Git Bash 里 `bonovel` 立即可用。
+
 安装后重开终端，即可全局使用：`bonovel` / `bonovel 小说.txt`。
 
 ---

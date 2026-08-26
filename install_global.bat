@@ -56,5 +56,10 @@ goto :path_done
 :path_done
 set "BONOVEL_INSTALL_DIR=%ADD_PATH%"
 powershell -NoProfile -Command "$d=$env:BONOVEL_INSTALL_DIR; $p=[Environment]::GetEnvironmentVariable('Path','User'); if($p -notlike '*'+$d+'*'){ [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';')+';'+$d), 'User'); Write-Host ('[install] Added to user PATH: '+$d) } else { Write-Host ('[install] Already in user PATH: '+$d) }"
+
+REM Git Bash shim: ~/bin is always on the Git Bash PATH, independent of Windows PATH refresh.
+if not exist "%USERPROFILE%\bin" mkdir "%USERPROFILE%\bin"
+copy /y "%~dp0packaging\bonovel-shim" "%USERPROFILE%\bin\bonovel" >nul
+if not errorlevel 1 echo [install] Installed Git Bash shim: %USERPROFILE%\bin\bonovel
 echo [install] Done. Open a NEW terminal, then run: bonovel --version
 endlocal

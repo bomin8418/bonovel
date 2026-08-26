@@ -22,6 +22,16 @@
 - **Known risks**：`~/.local/bin` 需加入 PATH 才能在任意目录使用 `bonovel` 命令
 - **Next best action**：无
 
+### 会话：Git Bash 全局命令 shim（~/bin/bonovel）— 已完成
+
+- **Goal**：修复 Git Bash 下 `bonovel: command not found`（Windows PATH 刷新时机导致）
+- **Root cause**：Windows PATH 改动只对新进程生效；Git Bash 若由改动前启动的终端/应用拉起，其继承环境不含 `C:\python311\Scripts` 等目录
+- **Completed**：新增 `packaging/bonovel-shim`（自动定位已装 exe 的 POSIX 包装脚本），`install_global.bat` 安装时复制为 `~/bin/bonovel`；`~/bin` 始终在 Git Bash PATH 上，独立于 Windows PATH 刷新
+- **Verification run**：新鲜 Git Bash `command -v bonovel` → `/c/Users/admin/bin/bonovel`；`bonovel --version` → bo-novel 0.1.0；当前（旧 PATH）会话亦立即生效；`python run.py --test` 82 项 OK
+- **Evidence recorded**：见 packaging/bonovel-shim
+- **Commits**：见下
+- **Next best action**：无
+
 ### 会话：install_global.sh 支持 Windows Git Bash（自动委托 .bat）— 已完成
 
 - **Goal**：让 Git Bash（MINGW）下也能正确全局安装
