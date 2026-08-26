@@ -68,7 +68,7 @@ bonovel.bat 小说.txt -d D:\books   # 导入一本并指定数据目录
 install_global.bat             # wheel 安装，自动加入用户 PATH
 install_global.bat exe         # 复制独立 bonovel.exe 并加入 PATH
 
-# macOS / Linux
+# macOS / Linux（Windows 的 Git Bash 亦会自动委托 install_global.bat）
 ./install_global.sh            # pip install --user
 ```
 

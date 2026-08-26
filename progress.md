@@ -6,11 +6,31 @@
 
 - **Repository root**：`E:\03-aiproject\bo-novel`
 - **Standard startup path**：`python run.py`（或 `./init.sh`）
-- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 75 项，全绿）
+- **Standard verification path**：`python run.py --test`（等价 `python -m unittest discover -s tests -t .`；当前 82 项，全绿）
 - **Highest priority unfinished feature**：无（核心功能已全部完成；后续可按 feature_list.json 中的 `planned` 项扩展）
 - **Current blocker**：无
 
 ## Session Record
+
+### 会话：修复 install_global.sh 无 pip 解释器探测失败 — 已完成
+
+- **Goal**：修复 `./install_global.sh` 报 `No module named pip` 失败
+- **Root cause**：探测循环只验证 `import sys`，不验证 pip；本机 `python` 指向 hermes venv（无 pip）、`python3` 是 Windows Store 占位 stub，选中无 pip 解释器后必然失败
+- **Fixed**：探测增加 `-m pip --version` 校验；无带 pip 的 python 时自动回退为免 pip 启动器方案（复制 `bin/bonovel` 到 `~/.local/bin`），与项目零依赖设计一致
+- **Verification run**：`./install_global.sh`（Git Bash）→ 提示安装成功；`Test-Path ~/.local/bin/bonovel` → True；`python run.py --version` → bo-novel 0.1.0；`python -m unittest discover -s tests -t .` → 82 项 OK
+- **Commits**：待提交
+- **Known risks**：`~/.local/bin` 需加入 PATH 才能在任意目录使用 `bonovel` 命令
+- **Next best action**：无
+
+### 会话：install_global.sh 支持 Windows Git Bash（自动委托 .bat）— 已完成
+
+- **Goal**：让 Git Bash（MINGW）下也能正确全局安装
+- **Root cause**：Git Bash 的 `python` 是无 pip 的 hermes venv、`python3` 是 WindowsApps 占位别名；POSIX 分支即使有 pip 校验也无法把命令装进 Windows PATH 体系
+- **Completed**：`install_global.sh` 检测 `uname -s` 为 MINGW*/MSYS*/CYGWIN* 时用 `cygpath` 转路径并 `exec cmd //c` 委托 `install_global.bat`（wheel/exe 双模式均走可靠路径）；POSIX 分支保留既有 pip 校验 + 免 pip 启动器回退（两条修复合并）
+- **Verification run**：Git Bash 下 `./install_global.sh`（wheel）与 `./install_global.sh exe` 实测 exit 0、完成安装/加 PATH；`sh -n` 语法通过；`bonovel --version` 输出 bo-novel 0.1.0；`python run.py --test` 82 项 OK
+- **Evidence recorded**：见 install_global.sh
+- **Commits**：见下
+- **Next best action**：无
 
 ### 会话：发布 v0.1.0 GitHub Release — 已完成
 
