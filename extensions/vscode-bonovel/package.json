@@ -25,7 +25,7 @@
         "bonovel.command": {
           "type": "string",
           "default": "bonovel",
-          "markdownDescription": "全局 `bonovel` 命令名或可执行文件完整路径（例如 `bonovel`、`C:\\Python311\\Scripts\\bonovel.exe`）。"
+          "markdownDescription": "全局 `bonovel` 命令名或可执行文件完整路径（例如 `bonovel`、`C:\\Python311\\Scripts\\bonovel.exe`、`%LOCALAPPDATA%\\bonovel\\bonovel.exe`）。留默认值时插件会按已知安装位置自动探测（%LOCALAPPDATA%\\bonovel、\\Python311\\Scripts 等）。"
         },
         "bonovel.dataDir": {
           "type": "string",

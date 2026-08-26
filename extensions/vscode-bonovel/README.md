@@ -27,5 +27,13 @@ VSCode → 扩展面板 → 右上角 `...` → **从 VSIX 安装**，选择 `di
 
 | 设置 | 默认 | 说明 |
 | --- | --- | --- |
-| `bonovel.command` | `bonovel` | 全局命令名，或可执行文件完整路径 |
+| `bonovel.command` | `bonovel` | 全局命令名，或可执行文件完整路径。留默认值时插件会自动探测 `%LOCALAPPDATA%\bonovel\bonovel.exe`、`<系统盘>\Python311\Scripts\bonovel.exe` 等已知位置 |
 | `bonovel.dataDir` | `""` | 可选，传给 `-d` 的用户数据目录（留空不传） |
+
+## 常见问题：找不到 `bonovel` 命令
+
+集成终端继承的是 **VSCode 进程**的环境。如果在安装/改 PATH 之后才打开 VSCode，终端仍可能找不到 `bonovel`。解决办法（任选）：
+
+1. **完全重启 VSCode**，让集成终端继承最新的 PATH。
+2. 或把 `bonovel.command` 设为完整路径，例如 `C:\python311\Scripts\bonovel.exe`（插件会直接用绝对路径，不依赖 PATH）。
+
