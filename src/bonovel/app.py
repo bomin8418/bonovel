@@ -189,6 +189,8 @@ class App:
         self.force_redraw = False
 
     def _dispatch(self, key: str, text: Optional[str]) -> None:
+        # 按键大小写归一化：C/P/G/B/Q/I/D 等大写亦触发对应命令（text 保留原样）
+        key = key.lower() if isinstance(key, str) else key
         view = self._view
         if view is None:
             return

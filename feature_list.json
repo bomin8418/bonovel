@@ -49,11 +49,11 @@
       "priority": 3,
       "area": "settings",
       "title": "主题切换",
-      "user_visible_behavior": "6 套主题（sepia/classic/dark/paper/terminal/plain）可即时切换并持久化。",
+      "user_visible_behavior": "7 套主题（sepia/classic/dark/paper/terminal/plain/plain-dark）可即时切换并持久化。",
       "status": "passing",
       "verification": "python -m unittest discover -s tests -t . 中 ThemeNamesTestCase/test_plain_theme_available 全过。",
-      "evidence": "设置界面切换主题后 config.json 落盘正确；默认主题已为 plain（黑白灰）。",
-      "notes": "plain 为「命令行·单色」主题，现为新用户默认主题。"
+      "evidence": "设置界面切换主题后 config.json 落盘正确；默认主题为 plain-dark（暗底单色，贴合暗色终端）。",
+      "notes": "plain-dark 为「命令行·单色暗」主题，新用户默认；plain（白底）保留供亮色环境切换。已有 config.json 存了旧主题的用户不自动生效。"
     },
     {
       "id": "keyboard",
@@ -62,8 +62,8 @@
       "title": "跨平台键盘输入",
       "user_visible_behavior": "Windows/macOS/Linux 下方向键、翻页键、Ctrl 组合、resize 均正确响应。",
       "status": "passing",
-      "verification": "python -m unittest discover -s tests -t . 中 KeyParserTestCase/WinExtKeyTestCase 全过。",
-      "evidence": "修复 Windows 扩展键（\\xe0/\\x00 前缀 + 扫描码）未翻译导致方向键/翻页键失效；新增 WinExtKeyTestCase 6 项全绿；msvcrt 冒烟输出 down/up/pagedown/left/right。后续补 keys.py 缺少的 List 类型导入（typing 导入行）。",
+      "verification": "python -m unittest discover -s tests -t . 中 KeyParserTestCase/WinExtKeyTestCase/AppDispatchTestCase 全过。",
+      "evidence": "App._dispatch 统一小写归一化：C/P/G/B/Q/I/D 等大写键亦触发对应命令；新增 AppDispatchTestCase 3 项全绿；修复 Windows 扩展键翻译。",
       "notes": "msvcrt(Win)/termios(Unix) 平台分支内延迟 import。"
     },
     {

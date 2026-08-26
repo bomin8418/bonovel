@@ -12,6 +12,27 @@
 
 ## Session Record
 
+### 会话：修复大写按键（C/P/G/B/Q 等）无响应 — 已完成
+
+- **Goal**：修复按提示大写 `C` 打开设置无反应（及 P/G/B/Q/I/D 同理）
+- **Root cause**：页脚/帮助提示用大写字母，但各视图 `on_key` 只匹配小写；`Shift+C` 经 KeyParser 得到 `('C','C')`，无分支命中而静默失效
+- **Completed**：`App._dispatch` 开头对 `key` 统一 `lower()` 归一化（text 保留原样），一处覆盖所有视图；特殊键/控制键本就小写不受影响；ImportView 用 text 追加路径不受影响
+- **Verification run**：`python run.py --test` → 78 项 OK（新增 tests/test_app.py::AppDispatchTestCase 3 项）；冒烟：大写 C→SettingsView、大写 P→模式切换为 scroll
+- **Evidence recorded**：见 tests/test_app.py；冒烟输出见上
+- **Commits**：待提交
+- **Known risks**：无
+- **Next best action**：无
+
+### 会话：默认主题改为暗色单色（plain-dark）— 已完成
+
+- **Goal**：修复暗色编辑器终端下默认主题白底刺眼的问题
+- **Completed**：新增 `plain-dark`（命令行·单色暗，全灰阶暗底）主题并设为默认（themes.py + config.DEFAULTS）；`plain`（白底）保留供亮色环境；测试断言同步（test_default_is_plain_dark / config 默认值）
+- **Verification run**：`python run.py --test` → 75 项 OK
+- **Evidence recorded**：default_theme() 返回 plain-dark；theme_names() 含 plain-dark；字段完整
+- **Commits**：待提交
+- **Known risks**：已有 config.json 存了旧主题的用户不自动生效（需在设置改主题或删 config.json），符合"仅改默认值"约定
+- **Next best action**：无
+
 ### 会话：修复退格键空路径无效操作 — 已完成
 
 - **Goal**：验证并修复 `ImportView.on_key` 退格键在 `self.path` 为空时执行 `self.path[:-1]` 的无效操作

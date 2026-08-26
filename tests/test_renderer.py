@@ -53,8 +53,8 @@ class ThemesTestCase(unittest.TestCase):
             self.assertTrue(t.header_fg)
             self.assertTrue(t.selection_bg)
 
-    def test_default_is_plain(self):
-        self.assertEqual(themes.default_theme().name, "plain")
+    def test_default_is_plain_dark(self):
+        self.assertEqual(themes.default_theme().name, "plain-dark")
 
 
 class LayoutPageTestCase(unittest.TestCase):

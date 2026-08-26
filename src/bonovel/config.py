@@ -26,7 +26,7 @@ LOG_FILENAME = "bonovel.log"
 # 默认配置。新增配置项时必须同时提供合理默认值与类型。
 DEFAULTS: Dict[str, Any] = {
     # --- 阅读外观 ---
-    "theme": "plain",       # 内置主题名，见 themes.py
+    "theme": "plain-dark",      # 内置主题名，见 themes.py
     "font_size": 1,          # 0=小 1=标准 2=大（影响页面密度，非真实变宽字体）
     "line_spacing": 1,       # 0=紧凑 1=标准 2=宽松
     # --- 阅读行为 ---
